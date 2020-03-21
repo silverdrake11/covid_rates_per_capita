@@ -6,6 +6,7 @@ import pandas as pd
 import plotly
 import plotly.express as px
 from bs4 import BeautifulSoup
+from pytz import timezone
 
 from data import get_data
 
@@ -62,7 +63,7 @@ def write_plot():
 
     total_confirmed = sum(tracker_data['confirmed'])
     total_deaths = sum(tracker_data['deaths'])
-    time_updated = datetime.now().strftime("%a %b %d %H:%M %p CST")
+    time_updated = datetime.now(timezone('America/Chicago')).strftime("%a %b %d %H:%M %p CST")
     fig.layout.title = TITLE.format(total_confirmed, total_deaths, time_updated)
 
     fig.layout.coloraxis.showscale = False
