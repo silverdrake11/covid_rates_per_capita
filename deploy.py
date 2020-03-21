@@ -16,19 +16,29 @@ def get_confirmed():
     return int(soup.body['data-total'])
 
 
+def run_git(*commands, files=[]):
+    assert all([isinstance(command, str) for command in commands])
+    final = ['git'] + list(commands) + list(files)
+    output = subprocess.check_output(final)
+    if output:
+        print(output)
+
+
 prev_label = get_confirmed()
 while True:
-    subprocess.check_output(['git', 'checkout', 'index.html'])
-    subprocess.check_output(['git', 'pull', '--no-edit'])
+    files = ['index.html', 'data.csv']
+    run_git('checkout', files=files)
+    run_git('pull')
     try:
         label = write_plot()
         if label != prev_label:
-            print(subprocess.check_output(['git', 'commit', 'index.html', '-m', 'Data update']))
-            print(subprocess.check_output(['git', 'push']))
+            run_git('add', files=files)
+            run_git('commit','-m', 'Data update', files=files)
+            run_git('push')
         prev_label = label
     except:
         traceback.print_exc()
 
     print(get_cur_time())
     print()
-    time.sleep(3600)
+    time.sleep(3901)
