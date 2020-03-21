@@ -11,7 +11,11 @@ from pytz import timezone
 from data import get_data
 
 
-TITLE = "US Covid-19 Rates Per Capita   Confirmed {}   Dead {}   Updated {}"
+TITLE = "US Covid-19 Rates Per Capita   Confirmed {}   Deaths {}   Updated {}"
+
+
+def get_cur_time():
+    return datetime.now(timezone('America/Chicago')).strftime("%a %b %d %H:%M %p CST")
 
 
 def format_html(plot_html, total_confirmed):
@@ -63,7 +67,7 @@ def write_plot():
 
     total_confirmed = sum(tracker_data['confirmed'])
     total_deaths = sum(tracker_data['deaths'])
-    time_updated = datetime.now(timezone('America/Chicago')).strftime("%a %b %d %H:%M %p CST")
+    time_updated = get_cur_time()
     fig.layout.title = TITLE.format(total_confirmed, total_deaths, time_updated)
 
     fig.layout.coloraxis.showscale = False
@@ -80,6 +84,7 @@ def write_plot():
         fh.write(plot_html)
 
     return total_confirmed # Used to check if there's changes in the data
+
 
 if __name__ == '__main__':
     write_plot()
