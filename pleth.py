@@ -23,10 +23,27 @@ def format_html(plot_html, total_confirmed):
     soup.html.attrs['style'] = 'height:100%; width=200%;'
     soup.body.attrs['style'] = 'height:100%; width=200%;'
     soup.body.attrs['data-total'] = total_confirmed
+
+    script = soup.new_tag('script')
+    script.attrs['async'] = None
+    script.attrs['src'] = 'https://www.googletagmanager.com/gtag/js?id=UA-161455592-1'
+    soup.head.append(script)
+
+    script = soup.new_tag('script')
+    script.string = '''
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-161455592-1');
+    '''
+    soup.head.append(script)
+
     script = soup.new_tag('script')
     script.attrs['src'] = 'https://cdn.plot.ly/plotly-latest.min.js'
     soup.head.append(script)
+    
     return str(soup)
+
 
 def write_plot():
 
