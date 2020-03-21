@@ -11,11 +11,11 @@ from pytz import timezone
 from data import get_data
 
 
-TITLE = "US Covid-19 Rates Per Capita   Confirmed {}   Deaths {}   Updated {}"
+TITLE = "US Covid-19 Rates Per Capita   Confirmed {:,}   Deaths {:,}   Updated {}"
 
 
 def get_cur_time():
-    return datetime.now(timezone('America/Chicago')).strftime("%a %b %d %H:%M %p CST")
+    return datetime.now(timezone('America/Chicago')).strftime("%a %b %d %-I:%M %p CST")
 
 
 def format_html(plot_html, total_confirmed):
@@ -56,6 +56,11 @@ def write_plot():
     df = pd.DataFrame(tracker_data)
     df.rate = df.rate.round(2)
 
+    # Write csv
+    csv_df = df[['codes','confirmed','deaths','recovered']]
+    csv_df = csv_df.sort_values(['codes'])
+    csv_df.to_csv('data.csv',index=False)
+
     fig = px.choropleth(df,
         locationmode='USA-states', 
         scope='usa',
@@ -88,6 +93,3 @@ def write_plot():
 
 if __name__ == '__main__':
     write_plot()
-
-
-
