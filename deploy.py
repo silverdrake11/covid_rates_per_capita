@@ -19,7 +19,7 @@ def get_confirmed():
 prev_label = get_confirmed()
 while True:
     subprocess.check_output(['git', 'checkout', 'index.html'])
-    subprocess.check_output(['git', 'pull'])
+    subprocess.check_output(['git', 'pull', '--no-edit'])
     try:
         label = write_plot()
         if label != prev_label:
