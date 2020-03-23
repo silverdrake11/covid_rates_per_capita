@@ -52,7 +52,7 @@ def get_john_hopkins_data():
 
             if state not in STATE_TABLE:
                 print(state)
-                break
+                continue
 
             output['confirmed'].append(confirmed)
             output['rate'].append(get_rate(confirmed, state))
@@ -102,7 +102,7 @@ def get_data():
         state = details['Province_State']
         if state not in STATE_TABLE:
             print(state)
-            break
+            continue
         
         confirmed = details['Confirmed']
         output['confirmed'].append(confirmed)
