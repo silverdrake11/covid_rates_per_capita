@@ -29,6 +29,20 @@ def format_html(plot_html, total_confirmed):
     soup.body.attrs['style'] = 'height:100%; width=200%;'
     soup.body.attrs['data-total'] = total_confirmed
 
+    title = soup.new_tag('title')
+    title.string = 'US Covid-19 Rates Per Capita (Coronavirus)'
+    soup.head.append(title)
+
+    meta = soup.new_tag('meta')
+    meta.attrs['http-equiv'] = 'content-type'
+    meta.attrs['content'] = 'text/html; charset=UTF-8'
+    soup.head.append(meta)
+
+    meta = soup.new_tag('meta')
+    meta.attrs['name'] = 'description'
+    meta.attrs['content'] = 'A map of United States confirmed COVID-19 cases. The darker colors correspond to a rate per capita measurement.'
+    soup.head.append(meta)
+
     script = soup.new_tag('script')
     script.attrs['async'] = None
     script.attrs['src'] = 'https://www.googletagmanager.com/gtag/js?id=UA-161455592-1'
