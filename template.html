@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html style="height:100%; width=200%;">
+<head>
+
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="UTF-8">
+  <meta name="description" content="{{description}}">
+  <link href="https://us-covid19-per-capita.net" rel="canonical">
+  <meta property="og:type"          content="website" />
+  <meta property="og:title"         content="{{title}}" />
+  <meta property="og:description"   content="{{description}}" />
+  <title>{{title}}</title>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-161615727-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-161615727-1');
+  </script>
+
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+</head>
+
+<body data-total="{{confirmed}}" style="height:100%; width=200%;">
+  {{plot}}
+</body>
+</html>

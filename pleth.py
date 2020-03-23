@@ -11,7 +11,9 @@ from pytz import timezone
 from data import get_data
 
 
-TITLE = "US Covid-19 Rates Per Capita   Confirmed {:,}   Deaths {:,}   Updated {}"
+PLOT_TITLE = "US Covid-19 Rates Per Capita   Confirmed {:,}   Deaths {:,}   Updated {}"
+HTML_TITLE = "US Covid-19 Rates Per Capita (Coronavirus)"
+DESCRIPTION = "A map of United States confirmed COVID-19 cases. The darker colors correspond to a rate per capita measurement."
 
 
 def get_cur_time():
@@ -19,49 +21,16 @@ def get_cur_time():
 
 
 def format_html(plot_html, total_confirmed):
-    '''text = open('file.html').read()
-    t = jinja2.Template(text)
-    rendered = t.render(plot=hello)'''
-    plot_html = '<!DOCTYPE html>' + plot_html
     soup = BeautifulSoup(plot_html, 'html.parser')
-    soup.body.div.unwrap()
-    soup.html.attrs['style'] = 'height:100%; width=200%;'
-    soup.body.attrs['style'] = 'height:100%; width=200%;'
-    soup.body.attrs['data-total'] = total_confirmed
-
-    title = soup.new_tag('title')
-    title.string = 'US Covid-19 Rates Per Capita (Coronavirus)'
-    soup.head.append(title)
-
-    meta = soup.new_tag('meta')
-    meta.attrs['http-equiv'] = 'content-type'
-    meta.attrs['content'] = 'text/html; charset=UTF-8'
-    soup.head.append(meta)
-
-    meta = soup.new_tag('meta')
-    meta.attrs['name'] = 'description'
-    meta.attrs['content'] = 'A map of United States confirmed COVID-19 cases. The darker colors correspond to a rate per capita measurement.'
-    soup.head.append(meta)
-
-    script = soup.new_tag('script')
-    script.attrs['async'] = None
-    script.attrs['src'] = 'https://www.googletagmanager.com/gtag/js?id=UA-161455592-1'
-    soup.head.append(script)
-
-    script = soup.new_tag('script')
-    script.string = '''
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'UA-161455592-1');
-    '''
-    soup.head.append(script)
-
-    script = soup.new_tag('script')
-    script.attrs['src'] = 'https://cdn.plot.ly/plotly-latest.min.js'
-    soup.head.append(script)
-    
-    return str(soup)
+    soup.div.unwrap()
+    plot_html = str(soup)
+    text = open('template.html').read()
+    t = jinja2.Template(text)
+    rendered = t.render(plot=plot_html, 
+            confirmed=total_confirmed,
+            title=HTML_TITLE,
+            description=DESCRIPTION)
+    return rendered
 
 
 def write_plot():
@@ -87,14 +56,14 @@ def write_plot():
     total_confirmed = sum(tracker_data['confirmed'])
     total_deaths = sum(tracker_data['deaths'])
     time_updated = get_cur_time()
-    fig.layout.title = TITLE.format(total_confirmed, total_deaths, time_updated)
+    fig.layout.title = PLOT_TITLE.format(total_confirmed, total_deaths, time_updated)
 
     fig.layout.coloraxis.showscale = False
     fig.layout.dragmode = False
 
     plot_html = plotly.io.to_html(fig, 
         include_plotlyjs=False, 
-        full_html=True, 
+        full_html=False, 
         config={'displayModeBar': False})
 
     plot_html = format_html(plot_html, total_confirmed)
