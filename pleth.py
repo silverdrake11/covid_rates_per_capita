@@ -8,7 +8,7 @@ import plotly.express as px
 from bs4 import BeautifulSoup
 from pytz import timezone
 
-from data import get_data
+import data
 
 
 PLOT_TITLE = "US Covid-19 Rates Per Capita   Confirmed {:,}   Deaths {:,}   Updated {}"
@@ -35,7 +35,7 @@ def format_html(plot_html, total_confirmed):
 
 def write_plot():
 
-    tracker_data = get_data()
+    tracker_data = data.get_data()
     df = pd.DataFrame(tracker_data)
     df.rate = df.rate.round(2)
 
