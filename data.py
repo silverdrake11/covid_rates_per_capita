@@ -67,11 +67,11 @@ def get_john_hopkins_data():
 
 
 def request_arcgis():
-    url = 'https://services9.arcgis.com/N9p5hsImWXAccRNI/arcgis/rest/services/Z7biAeD8PAkqgmWhxG2A/FeatureServer/1/query?f=json&where=(Confirmed%20%3E%200)%20AND%20(Country_Region%3D%27US%27)&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Confirmed%20desc%2CCountry_Region%20asc%2CProvince_State%20asc&outSR=102100&resultOffset=0&resultRecordCount=250&cacheHint=true'
+    url = 'https://services9.arcgis.com/N9p5hsImWXAccRNI/arcgis/rest/services/Nc2JKvYFoAEOFCG5JSI6/FeatureServer/3/query?f=json&where=(Confirmed%3C%3E0)%20AND%20(Country_Region%3D%27US%27)&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Confirmed%20desc&outSR=102100&resultOffset=0&resultRecordCount=75&cacheHint=true'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:74.0) Gecko/20100101 Firefox/74.0',
-        'Origin': 'https://www.arcgis.com',
-        'Referer': 'https://www.arcgis.com/apps/opsdashboard/index.html',
+        'Origin': 'https://gisanddata.maps.arcgis.com',
+        'Referer': 'https://gisanddata.maps.arcgis.com/apps/opsdashboard/index.html',
         'Accept': '*/*',
         'Accept-Language': 'en-US,en;q=0.5',
         'TE': 'Trailers',
@@ -100,7 +100,7 @@ def get_data():
     for item in items['features']:
         details = item['attributes']
         state = details['Province_State']
-        if state not in STATE_TABLE:
+        if state not in STATE_TABLE or state not in POP_TABLE:
             print(state)
             continue
         
