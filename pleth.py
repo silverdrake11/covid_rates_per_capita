@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+import traceback
 
 import jinja2
 import pandas as pd
@@ -33,11 +34,31 @@ def format_html(plot_html, total_confirmed):
     return rendered
 
 
+def get_most_recent_df():
+
+    df1 = None
+    df2 = None
+    try:
+        df1 = pd.DataFrame(data.get_arcgis())
+        df2 = pd.DataFrame(data.get_worldometer())
+        df = pd.concat([df1,df2])
+    except:
+        traceback.print_exc()
+        if df1 is not None:
+            df = df1
+        else:
+            df = pd.DataFrame(data.get_worldometer())
+
+    df = df.sort_values('confirmed').drop_duplicates('codes', keep='last')
+
+    df.rate = df.rate.round(2)
+    return df
+
+
 def write_plot():
 
-    tracker_data = data.get_data()
-    df = pd.DataFrame(tracker_data)
-    df.rate = df.rate.round(2)
+    df = get_most_recent_df()
+    print(df.source.value_counts())
 
     # Write csv
     csv_df = df[['codes','confirmed','deaths','recovered']]
@@ -53,8 +74,8 @@ def write_plot():
         hover_data=['confirmed', 'deaths', 'rate'], 
         color_continuous_scale='sunsetdark',)
 
-    total_confirmed = sum(tracker_data['confirmed'])
-    total_deaths = sum(tracker_data['deaths'])
+    total_confirmed = df.confirmed.sum()
+    total_deaths = df.deaths.sum()
     time_updated = get_cur_time()
     fig.layout.title = PLOT_TITLE.format(total_confirmed, total_deaths, time_updated)
 

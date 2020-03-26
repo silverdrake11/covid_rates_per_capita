@@ -3,6 +3,7 @@ import json
 from datetime import datetime, timedelta
 
 import requests
+from bs4 import BeautifulSoup
 
 from tables import POP_TABLE, STATE_TABLE
 
@@ -28,24 +29,85 @@ def request_john_hopkins():
         return requests.get(url.format(yesterday_timestamp)).text
 
 
-def get_john_hopkins_data():
+class Output:
+    '''Keeps track of the data output format'''
+
+    def __init__(self):
+
+        # This is how plotly / pandas wants it
+        self.output = {
+            'rate': [],
+            'states': [],
+            'codes': [],
+            'confirmed': [],
+            'deaths': [],
+            'recovered': [],
+            'source': []}
+
+    def add_row(self, state, confirmed, deaths, recovered, source):
+
+        self.output['confirmed'].append(confirmed)
+        self.output['rate'].append(get_rate(confirmed, state))
+        
+        self.output['deaths'].append(deaths)
+        self.output['recovered'].append(recovered)
+        
+        self.output['states'].append(state)
+        self.output['codes'].append(STATE_TABLE[state]) # This is the state abbreviation
+
+        self.output['source'].append(source)
+
+
+def clean_num(num_str):
+    num_str = num_str.strip().replace(',','')
+    if num_str:
+        return int(num_str)
+    else:
+        return 0
+
+
+def get_worldometer():
+
+    url = 'https://www.worldometers.info/coronavirus/country/us/'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    table = soup.find('table', {'id':'usa_table_countries_today'})
+
+    output = Output()
+
+    for tbody in table.findAll('tbody'):
+        for item in tbody.findAll('tr'):
+
+            row = item.findAll('td')
+            state = row[0].text.strip()
+            state = state.title()
+            if 'Virgin Islands' in state:
+                state = 'Virgin Islands'
+
+            if state not in STATE_TABLE:
+                print(state)
+                continue
+
+            confirmed = clean_num(row[1].text)
+            deaths = clean_num(row[3].text)
+            recovered = 0 # Will fill in later
+
+            output.add_row(state, confirmed, deaths, recovered, 'worldometer')
+
+    return output.output
+
+
+def get_john_hopkins():
 
     csvfile = request_john_hopkins().splitlines()
 
-    output = {
-        'rate': [],
-        'states': [],
-        'codes': [],
-        'confirmed': [],
-        'deaths': [],
-        'recovered': []
-    }
+    output = Output()
     
     spamreader = csv.reader(csvfile)
     for row in spamreader:
         if row[1] == 'US':
 
-            state = row[0]
+            state = row[0].title()
             confirmed = int(row[3])
             deaths = int(row[4])
             recovered = int(row[5])
@@ -54,16 +116,9 @@ def get_john_hopkins_data():
                 print(state)
                 continue
 
-            output['confirmed'].append(confirmed)
-            output['rate'].append(get_rate(confirmed, state))
+            output.add_row(state, confirmed, deaths, recovered, 'jhu')
 
-            output['deaths'].append(deaths)
-            output['recovered'].append(recovered)
-
-            output['states'].append(state)
-            output['codes'].append(STATE_TABLE[state]) # This is the state abbreviation
-
-    return output
+    return output.output
 
 
 def request_arcgis():
@@ -84,34 +139,26 @@ def request_arcgis():
     return json.load(open(DATA_FILENAME))
 
 
-def get_data():
+def get_arcgis():
 
-    output = {
-        'rate': [],
-        'states': [],
-        'codes': [],
-        'confirmed': [],
-        'deaths': [],
-        'recovered': []
-    }
+    output = Output()
 
     items = request_arcgis()
 
     for item in items['features']:
         details = item['attributes']
         state = details['Province_State']
+        state = state.title()
+
         if state not in STATE_TABLE or state not in POP_TABLE:
             print(state)
             continue
         
         confirmed = details['Confirmed']
-        output['confirmed'].append(confirmed)
-        output['rate'].append(get_rate(confirmed, state))
+        deaths = details['Deaths']
+        recovered = details['Recovered']
 
-        output['deaths'].append(details['Deaths'])
-        output['recovered'].append(details['Recovered'])
+        output.add_row(state, confirmed, deaths, recovered, 'arcgis')
 
-        output['states'].append(state)
-        output['codes'].append(STATE_TABLE[state]) # This is the state abbreviation
+    return output.output
 
-    return output
