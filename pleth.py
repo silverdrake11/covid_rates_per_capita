@@ -36,20 +36,20 @@ def format_html(plot_html, total_confirmed):
 
 def get_most_recent_df():
 
-    df1 = None
-    df2 = None
+    df = pd.DataFrame()
     try:
         df1 = pd.DataFrame(data.get_arcgis())
-        df2 = pd.DataFrame(data.get_worldometer())
-        df = pd.concat([df1,df2])
+        df = df.append(df1)
     except:
         traceback.print_exc()
-        if df1 is not None:
-            df = df1
-        else:
-            df = pd.DataFrame(data.get_worldometer())
+    try:
+        df2 = pd.DataFrame(data.get_worldometer())
+        df = df.append(df2)
+    except:
+        traceback.print_exc()
 
-    df = df.sort_values('confirmed').drop_duplicates('codes', keep='last')
+    # Keep rows that are most recent (sort by deaths, if tie then confirmed)
+    df = df.sort_values(['deaths', 'confirmed']).drop_duplicates('codes', keep='last')
 
     df.rate = df.rate.round(2)
     return df

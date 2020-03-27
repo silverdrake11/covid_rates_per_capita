@@ -42,7 +42,7 @@ STATE_TABLE = {
     'Oregon': 'OR',
     'Palau': 'PW',
     'Pennsylvania': 'PA',
-    #'Puerto Rico': 'PR', Not supported yet
+    'Puerto Rico': 'PR',
     'Rhode Island': 'RI',
     'South Carolina': 'SC',
     'South Dakota': 'SD',
