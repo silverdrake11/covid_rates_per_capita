@@ -36,11 +36,11 @@ STATE_TABLE = {
     'New York': 'NY',
     'North Carolina': 'NC',
     'North Dakota': 'ND',
-    'Northern Mariana Islands':'MP',
+    #'Northern Mariana Islands':'MP', Not supported yet
     'Ohio': 'OH',
     'Oklahoma': 'OK',
     'Oregon': 'OR',
-    'Palau': 'PW',
+    #'Palau': 'PW', Not supported yet
     'Pennsylvania': 'PA',
     'Puerto Rico': 'PR',
     'Rhode Island': 'RI',
