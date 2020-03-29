@@ -47,6 +47,10 @@ def get_most_recent_df():
         df = df.append(df2)
     except:
         traceback.print_exc()
+    try: # In case the data we already have is most recent (for example if the other sources break)
+        df = df.append(data.get_current_site_df())
+    except:
+        traceback.print_exc()
 
     # Keep rows that are most recent (sort by deaths, if tie then confirmed)
     df = df.sort_values(['deaths', 'confirmed']).drop_duplicates('codes', keep='last')

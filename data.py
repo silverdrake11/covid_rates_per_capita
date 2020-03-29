@@ -2,6 +2,7 @@ import csv
 import json
 from datetime import datetime, timedelta
 
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
@@ -9,6 +10,7 @@ from tables import POP_TABLE, STATE_TABLE
 
 
 DATA_FILENAME = 'data.json'
+CODES_TABLE = {v: k for k, v in STATE_TABLE.items()}
 
 
 def get_rate(confirmed, state):
@@ -161,4 +163,28 @@ def get_arcgis():
         output.add_row(state, confirmed, deaths, recovered, 'arcgis')
 
     return output.output
+
+
+def df_get_states(row):
+  return CODES_TABLE[row['codes']]
+
+
+def df_get_rate(row):
+    return get_rate(row['confirmed'], row['states'])
+
+
+def get_current_site_df():
+
+    df = pd.read_csv('data.csv')
+
+    df['source'] = 'site'
+    df['states'] = df.apply(df_get_states, axis=1)
+
+    df['rate'] = df.apply(df_get_rate, axis=1)
+
+    return df
+
+
+
+
 
