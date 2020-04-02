@@ -52,6 +52,8 @@ def get_most_recent_df():
     except:
         traceback.print_exc()
 
+    df = df.astype({'confirmed':int, 'deaths':int, 'recovered':int}) # Make sure they are ints
+
     # Keep rows that are most recent (sort by deaths, if tie then confirmed)
     df = df.sort_values(['deaths', 'confirmed']).drop_duplicates('codes', keep='last')
 

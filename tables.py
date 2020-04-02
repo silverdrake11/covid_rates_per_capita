@@ -36,7 +36,7 @@ STATE_TABLE = {
     'New York': 'NY',
     'North Carolina': 'NC',
     'North Dakota': 'ND',
-    #'Northern Mariana Islands':'MP', Not supported yet
+    'Northern Mariana Islands':'MP',
     'Ohio': 'OH',
     'Oklahoma': 'OK',
     'Oregon': 'OR',
@@ -112,4 +112,5 @@ POP_TABLE = {
     'Vermont':628061,
     'Wyoming':567025,
     'Guam':  168379,
-    'Virgin Islands': 104466}
+    'Virgin Islands': 104466,
+    'Northern Mariana Islands': 57475}
