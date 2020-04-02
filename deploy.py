@@ -13,7 +13,7 @@ def get_confirmed():
     request = requests.get(url)
     plot_html = request.text
     soup = BeautifulSoup(plot_html, 'html.parser')
-    return int(soup.body['data-total'])
+    return int(float(soup.body['data-total'])) # For example "110.0" was causing issues
 
 
 def run_git(*commands, files=[]):
