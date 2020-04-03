@@ -15,7 +15,7 @@ CODES_TABLE = {v: k for k, v in STATE_TABLE.items()}
 
 def get_rate(confirmed, state):
     pop = POP_TABLE[state]
-    return 10000 * confirmed/pop
+    return (10000 * confirmed)/pop
 
 
 def request_john_hopkins():
@@ -49,15 +49,14 @@ class Output:
     def add_row(self, state, confirmed, deaths, recovered, source):
 
         self.output['confirmed'].append(confirmed)
-        self.output['rate'].append(get_rate(confirmed, state))
-        
         self.output['deaths'].append(deaths)
         self.output['recovered'].append(recovered)
         
-        self.output['states'].append(state)
         self.output['codes'].append(STATE_TABLE[state]) # This is the state abbreviation
 
+        self.output['states'].append(state)
         self.output['source'].append(source)
+        self.output['rate'].append(get_rate(confirmed, state))
 
 
 def clean_num(num_str):
@@ -124,7 +123,7 @@ def get_john_hopkins():
 
 
 def request_arcgis():
-    url = 'https://services9.arcgis.com/N9p5hsImWXAccRNI/arcgis/rest/services/Nc2JKvYFoAEOFCG5JSI6/FeatureServer/3/query?f=json&where=(Confirmed%3C%3E0)%20AND%20(Country_Region%3D%27US%27)&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Confirmed%20desc&outSR=102100&resultOffset=0&resultRecordCount=75&cacheHint=true'
+    url = 'https://services9.arcgis.com/N9p5hsImWXAccRNI/arcgis/rest/services/Nc2JKvYFoAEOFCG5JSI6/FeatureServer/3/query?f=json&where=Country_Region%3D%27US%27&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Confirmed%20desc&outSR=102100&resultOffset=0&resultRecordCount=75&cacheHint=true'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:74.0) Gecko/20100101 Firefox/74.0',
         'Origin': 'https://gisanddata.maps.arcgis.com',
@@ -174,14 +173,10 @@ def df_get_rate(row):
 
 
 def get_current_site_df():
-
     df = pd.read_csv('data.csv')
-
     df['source'] = 'site'
     df['states'] = df.apply(df_get_states, axis=1)
-
     df['rate'] = df.apply(df_get_rate, axis=1)
-
     return df
 
 
