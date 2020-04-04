@@ -38,25 +38,22 @@ class Output:
 
         # This is how plotly / pandas wants it
         self.output = {
-            'rate': [],
-            'states': [],
             'codes': [],
             'confirmed': [],
             'deaths': [],
-            'recovered': [],
-            'source': []}
+            'recovered': [],}
 
-    def add_row(self, state, confirmed, deaths, recovered, source):
+    def add_row(self, state, confirmed, deaths, recovered):
 
         self.output['confirmed'].append(confirmed)
         self.output['deaths'].append(deaths)
         self.output['recovered'].append(recovered)
-        
         self.output['codes'].append(STATE_TABLE[state]) # This is the state abbreviation
 
-        self.output['states'].append(state)
-        self.output['source'].append(source)
-        self.output['rate'].append(get_rate(confirmed, state))
+    def get_df(self, source):
+        df = pd.DataFrame(self.output)
+        add_cols_to_df(df, source)
+        return df
 
 
 def clean_num(num_str):
@@ -67,7 +64,7 @@ def clean_num(num_str):
         return 0
 
 
-def get_worldometer():
+def get_worldometer_df():
 
     url = 'https://www.worldometers.info/coronavirus/country/us/'
     response = requests.get(url)
@@ -93,12 +90,12 @@ def get_worldometer():
             deaths = clean_num(row[3].text)
             recovered = 0 # Will fill in later
 
-            output.add_row(state, confirmed, deaths, recovered, 'worldometer')
+            output.add_row(state, confirmed, deaths, recovered)
 
-    return output.output
+    return output.get_df('worldometer') 
 
 
-def get_john_hopkins():
+def get_john_hopkins_df():
 
     csvfile = request_john_hopkins().splitlines()
 
@@ -117,9 +114,9 @@ def get_john_hopkins():
                 print(state)
                 continue
 
-            output.add_row(state, confirmed, deaths, recovered, 'jhu')
+            output.add_row(state, confirmed, deaths, recovered)
 
-    return output.output
+    return output.get_df('jhu') 
 
 
 def request_arcgis():
@@ -140,7 +137,7 @@ def request_arcgis():
     return json.load(open(DATA_FILENAME))
 
 
-def get_arcgis():
+def get_arcgis_df():
 
     output = Output()
 
@@ -159,24 +156,34 @@ def get_arcgis():
         deaths = details['Deaths']
         recovered = details['Recovered']
 
-        output.add_row(state, confirmed, deaths, recovered, 'arcgis')
+        output.add_row(state, confirmed, deaths, recovered)
 
-    return output.output
+    return output.get_df('arcgis')
 
 
 def df_get_states(row):
   return CODES_TABLE[row['codes']]
 
-
 def df_get_rate(row):
     return get_rate(row['confirmed'], row['states'])
+
+def df_get_death_rate(row):
+    return get_rate(row['deaths'], row['states'])
+
+
+def add_cols_to_df(df, source):
+    df['source'] = source
+    df['states'] = df.apply(df_get_states, axis=1)
+    df['rate'] = df.apply(df_get_rate, axis=1)
+    df['drate'] = df.apply(df_get_death_rate, axis=1)
+    df.rate = df.rate.round(2)
+    df.drate = df.drate * 10
+    df.drate = df.drate.round(2)
 
 
 def get_current_site_df():
     df = pd.read_csv('data.csv')
-    df['source'] = 'site'
-    df['states'] = df.apply(df_get_states, axis=1)
-    df['rate'] = df.apply(df_get_rate, axis=1)
+    add_cols_to_df(df, 'site')
     return df
 
 

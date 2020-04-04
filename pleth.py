@@ -38,13 +38,11 @@ def get_most_recent_df():
 
     df = pd.DataFrame()
     try:
-        df1 = pd.DataFrame(data.get_arcgis())
-        df = df.append(df1)
+        df = df.append(data.get_arcgis_df())
     except:
         traceback.print_exc()
     try:
-        df2 = pd.DataFrame(data.get_worldometer())
-        df = df.append(df2)
+        df = df.append(data.get_worldometer_df())
     except:
         traceback.print_exc()
     try: # In case the data we already have is most recent (for example if the other sources break)
@@ -57,7 +55,6 @@ def get_most_recent_df():
     # Keep rows that are most recent (sort by deaths, if tie then confirmed)
     df = df.sort_values(['deaths', 'confirmed']).drop_duplicates('codes', keep='last')
 
-    df.rate = df.rate.round(2)
     return df
 
 
@@ -74,10 +71,10 @@ def write_plot():
     fig = px.choropleth(df,
         locationmode='USA-states', 
         scope='usa',
-        color='rate', 
+        color='drate', 
         locations='codes',
         hover_name='states', 
-        hover_data=['confirmed', 'deaths', 'rate'], 
+        hover_data=['confirmed', 'deaths', 'drate'], 
         color_continuous_scale='sunsetdark',)
 
     total_confirmed = df.confirmed.sum()
