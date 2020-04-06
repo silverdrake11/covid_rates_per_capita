@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html style="height:100%; width=200%;">
+<html>
 <head>
-
+  <link rel="stylesheet" href="mvp.css">
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta charset="UTF-8">
   <meta name="description" content="{{description}}">
-  <link href="https://us-covid19-per-capita.net" rel="canonical">
+  <link href="{{link}}" rel="canonical">
   <meta property="og:type"          content="website" />
-  <meta property="og:title"         content="{{title}}" />
+  <meta property="og:title"         content="{{html_title}}" />
   <meta property="og:description"   content="{{description}}" />
-  <title>{{title}}</title>
+  <title>{{html_title}}</title>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-161615727-1"></script>
   <script>
@@ -22,9 +22,50 @@
 
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
+  <style>
+    @media screen and (min-width: 1224px) {
+
+      html {
+            height: 100%;
+            width: 100%;
+       }
+
+      body {
+            height: 100%;
+            width: 100%;
+       }
+
+    }
+  </style>
+
 </head>
 
-<body data-total="{{confirmed}}" style="height:100%; width=200%;">
+<body data-total="{{confirmed}}">
+  <main>
+    <header>
+    <h3>
+      {{title}}
+    </h3>
+    <p> Confirmed {{"{:,}".format(confirmed)}} &nbsp; Deaths {{"{:,}".format(deaths)}}</p>
+    <p> <i>Updated {{updated}}</i> </p>
+    </header>
+  </main>
   {{plot}}
+  <footer>
+    <hr>
+    <p>
+        {{description}}
+    </p>
+    {% block footer %}
+      <p>
+      For the deaths per state population, click <a href="deaths.html"> here.</a>
+    </p>
+      <p>
+      Sources are <a href="https://www.worldometers.info/coronavirus/country/us/"> Worldometer</a> and the <a href="https://coronavirus.jhu.edu/map.html"> JHU dashboard.</a>
+
+      Code is on <a href="https://github.com/silverdrake11/covid_rates_per_capita"> GitHub.</a> Current data is <a href="data.csv"> here.</a>
+    </p>
+    {% endblock %}
+  </footer>
 </body>
 </html>

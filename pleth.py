@@ -12,26 +12,15 @@ from pytz import timezone
 import data
 
 
-PLOT_TITLE = "US Covid-19 Rates Per Capita   Confirmed {:,}   Deaths {:,}   Updated {}"
-HTML_TITLE = "US Covid-19 Rates Per Capita (Coronavirus)"
-DESCRIPTION = "A map of United States confirmed COVID-19 cases. The darker colors correspond to a rate per capita measurement."
+TITLE = "US Covid-19 Rates Per Capita"
+HTML_TITLE = TITLE + " (Coronavirus)"
+DESCRIPTION = "A map tracking the United States confirmed COVID-19 cases. The darker colors correspond to a greater rate per capita measurement."
+HOMEPAGE = 'https://us-covid19-per-capita.net'
+TEMPLATE_FILENAME = 'template.html'
 
 
 def get_cur_time():
     return datetime.now(timezone('America/Chicago')).strftime("%a %b %d %-I:%M %p CST")
-
-
-def format_html(plot_html, total_confirmed):
-    soup = BeautifulSoup(plot_html, 'html.parser')
-    soup.div.unwrap()
-    plot_html = str(soup)
-    text = open('template.html').read()
-    t = jinja2.Template(text)
-    rendered = t.render(plot=plot_html, 
-            confirmed=total_confirmed,
-            title=HTML_TITLE,
-            description=DESCRIPTION)
-    return rendered
 
 
 def get_most_recent_df():
@@ -58,6 +47,85 @@ def get_most_recent_df():
     return df
 
 
+def get_plot_html(df, colors_column):
+
+    fig = px.choropleth(df,
+        locationmode='USA-states', 
+        scope='usa',
+        color=colors_column, 
+        locations='codes',
+        hover_name='states', 
+        hover_data=['confirmed', 'deaths', colors_column], 
+        color_continuous_scale='sunsetdark',)
+
+    fig.layout.coloraxis.showscale = False
+    fig.layout.dragmode = False
+    fig.layout.autosize = True
+    fig.layout.margin=dict(
+        l=0,
+        r=0,
+        b=0,
+        t=0,
+        pad=0,
+    )
+
+    plot_html = plotly.io.to_html(fig, 
+        include_plotlyjs=False, 
+        full_html=False, 
+        config={'displayModeBar': False})
+
+    # Remove problematic div tag
+    soup = BeautifulSoup(plot_html, 'html.parser')
+    soup.div.unwrap()
+    plot_html = str(soup)
+
+    return plot_html
+
+
+def write_index_page(df, total_confirmed, total_deaths, time_updated):
+
+    plot_html = get_plot_html(df, 'rate')
+
+    text = open(TEMPLATE_FILENAME).read()
+    t = jinja2.Template(text)
+    rendered = t.render(plot=plot_html, 
+            confirmed=total_confirmed,
+            deaths=total_deaths,
+            updated=time_updated,
+            title=TITLE,
+            html_title=HTML_TITLE,
+            description=DESCRIPTION,
+            link=HOMEPAGE)
+
+    with open('index.html', 'w') as fh:
+        fh.write(rendered)
+
+
+def write_deaths_page(df, total_confirmed, total_deaths,  time_updated):
+
+    page_filename = 'deaths.html'
+    description = 'A map of USA death rates per state population from the Coronavirus (in this case per 100,000 people). Tap or hover to display the numbers.'
+
+    plot_html = get_plot_html(df, 'drate') # Death rate
+
+    # We need to do this b/c it refers to the other template
+    template_loader = jinja2.FileSystemLoader(searchpath='./')
+    template_env = jinja2.Environment(loader=template_loader)
+    t = template_env.get_template('deaths_template.html')
+
+    rendered = t.render(plot=plot_html, 
+            confirmed=total_confirmed,
+            deaths=total_deaths,
+            updated=time_updated,
+            title=TITLE.replace('Rates', 'Deaths'),
+            html_title=HTML_TITLE.replace('Rates', 'Deaths'),
+            description=description,
+            link=HOMEPAGE + '/' + page_filename)
+
+    with open(page_filename, 'w') as fh:
+        fh.write(rendered)
+
+
 def write_plot():
 
     df = get_most_recent_df()
@@ -68,32 +136,12 @@ def write_plot():
     csv_df = csv_df.sort_values(['codes'])
     csv_df.to_csv('data.csv',index=False)
 
-    fig = px.choropleth(df,
-        locationmode='USA-states', 
-        scope='usa',
-        color='drate', 
-        locations='codes',
-        hover_name='states', 
-        hover_data=['confirmed', 'deaths', 'drate'], 
-        color_continuous_scale='sunsetdark',)
-
     total_confirmed = df.confirmed.sum()
     total_deaths = df.deaths.sum()
     time_updated = get_cur_time()
-    fig.layout.title = PLOT_TITLE.format(total_confirmed, total_deaths, time_updated)
 
-    fig.layout.coloraxis.showscale = False
-    fig.layout.dragmode = False
-
-    plot_html = plotly.io.to_html(fig, 
-        include_plotlyjs=False, 
-        full_html=False, 
-        config={'displayModeBar': False})
-
-    plot_html = format_html(plot_html, total_confirmed)
-
-    with open('index.html', 'w') as fh:
-        fh.write(plot_html)
+    write_index_page(df, total_confirmed, total_deaths, time_updated)
+    write_deaths_page(df, total_confirmed, total_deaths, time_updated)
 
     return total_confirmed # Used to check if there's changes in the data
 
