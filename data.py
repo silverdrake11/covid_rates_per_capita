@@ -186,7 +186,7 @@ def request_wikipedia(state):
         state = different[state]
     state = state.replace(' ', '_')
     actual_url = url.format(state)
-    response = requests.get(actual_url, headers={'User-Agent': USER_AGENT})
+    response = requests.get(actual_url, headers={'User-Agent': USER_AGENT}, timeout=5)
     return response.text
 
 
@@ -247,4 +247,3 @@ def get_current_site_df():
     df = pd.read_csv('data.csv')
     add_cols_to_df(df, 'site')
     return df
-    
