@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from retrying import retry
 
 from tables import POP_TABLE, STATE_TABLE
 
@@ -171,8 +172,9 @@ def get_wiki_num(item):
     return int(num)
 
 
-def get_wiki_for_state(state):
-    time.sleep(1)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
+def request_wikipedia(state):
+    time.sleep(0.2)
     url = 'https://en.wikipedia.org/wiki/2020_coronavirus_pandemic_in_{}'
     print(state, end=' ', flush=True)
     different = {'New York': 'New York (state)',
@@ -185,7 +187,12 @@ def get_wiki_for_state(state):
     state = state.replace(' ', '_')
     actual_url = url.format(state)
     response = requests.get(actual_url, headers={'User-Agent': USER_AGENT})
-    soup = BeautifulSoup(response.text, 'html.parser')
+    return response.text
+
+
+def get_wiki_for_state(state):
+    html = request_wikipedia(state)
+    soup = BeautifulSoup(html, 'html.parser')
     table = soup.find('table', {'class':'infobox'})
     confirmed = None
     deaths = None
@@ -240,8 +247,4 @@ def get_current_site_df():
     df = pd.read_csv('data.csv')
     add_cols_to_df(df, 'site')
     return df
-
-
-
-
-
+    
