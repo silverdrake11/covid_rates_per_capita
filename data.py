@@ -1,6 +1,7 @@
 import csv
 import json
 import re
+import time
 import traceback
 from datetime import datetime, timedelta
 
@@ -171,6 +172,7 @@ def get_wiki_num(item):
 
 
 def get_wiki_for_state(state):
+    time.sleep(0.2)
     url = 'https://en.wikipedia.org/wiki/2020_coronavirus_pandemic_in_{}'
     print(state, end=' ')
     different = {'New York': 'New York (state)',
