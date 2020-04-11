@@ -13,7 +13,7 @@ from tables import POP_TABLE, STATE_TABLE
 
 DATA_FILENAME = 'data.json'
 CODES_TABLE = {v: k for k, v in STATE_TABLE.items()}
-
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:74.0) Gecko/20100101 Firefox/74.0'
 
 def get_rate(confirmed, state):
     pop = POP_TABLE[state]
@@ -124,7 +124,7 @@ def get_john_hopkins_df():
 def request_arcgis():
     url = 'https://services9.arcgis.com/N9p5hsImWXAccRNI/arcgis/rest/services/Nc2JKvYFoAEOFCG5JSI6/FeatureServer/3/query?f=json&where=Country_Region%3D%27US%27&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=*&orderByFields=Confirmed%20desc&outSR=102100&resultOffset=0&resultRecordCount=75&cacheHint=true'
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:74.0) Gecko/20100101 Firefox/74.0',
+        'User-Agent': USER_AGENT,
         'Origin': 'https://gisanddata.maps.arcgis.com',
         'Referer': 'https://gisanddata.maps.arcgis.com/apps/opsdashboard/index.html',
         'Accept': '*/*',
@@ -172,6 +172,7 @@ def get_wiki_num(item):
 
 def get_wiki_for_state(state):
     url = 'https://en.wikipedia.org/wiki/2020_coronavirus_pandemic_in_{}'
+    print(state, end=' ')
     different = {'New York': 'New York (state)',
         'Georgia': 'Georgia (U.S. state)',
         'District Of Columbia': 'Washington, D.C.',
@@ -181,7 +182,7 @@ def get_wiki_for_state(state):
         state = different[state]
     state = state.replace(' ', '_')
     actual_url = url.format(state)
-    response = requests.get(actual_url)
+    response = requests.get(actual_url, headers={'User-Agent': USER_AGENT})
     soup = BeautifulSoup(response.text, 'html.parser')
     table = soup.find('table', {'class':'infobox'})
     confirmed = None
@@ -209,6 +210,7 @@ def get_wikipedia_df():
             traceback.print_exc()
             continue
         output.add_row(state, confirmed, deaths, 0)
+    print('')
     return output.get_df('wikipedia')
 
 
