@@ -172,9 +172,9 @@ def get_wiki_num(item):
 
 
 def get_wiki_for_state(state):
-    time.sleep(0.2)
+    time.sleep(1)
     url = 'https://en.wikipedia.org/wiki/2020_coronavirus_pandemic_in_{}'
-    print(state, end=' ')
+    print(state, end=' ', flush=True)
     different = {'New York': 'New York (state)',
         'Georgia': 'Georgia (U.S. state)',
         'District Of Columbia': 'Washington, D.C.',
