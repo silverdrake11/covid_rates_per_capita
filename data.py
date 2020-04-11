@@ -1,5 +1,7 @@
 import csv
 import json
+import re
+import traceback
 from datetime import datetime, timedelta
 
 import pandas as pd
@@ -129,7 +131,7 @@ def request_arcgis():
         'Accept-Language': 'en-US,en;q=0.5',
         'TE': 'Trailers',
     }
-
+ 
     response = requests.get(url, headers=headers)
     with open(DATA_FILENAME, 'w') as fh:
         fh.write(response.text)
@@ -159,6 +161,55 @@ def get_arcgis_df():
         output.add_row(state, confirmed, deaths, recovered)
 
     return output.get_df('arcgis')
+
+
+def get_wiki_num(item):
+    num = item.find('td').text.strip()
+    num = re.split('\[|\(|[a-zA-Z]', num)[0]
+    num = num.replace(',','')
+    return int(num)
+
+
+def get_wiki_for_state(state):
+    url = 'https://en.wikipedia.org/wiki/2020_coronavirus_pandemic_in_{}'
+    different = {'New York': 'New York (state)',
+        'Georgia': 'Georgia (U.S. state)',
+        'District Of Columbia': 'Washington, D.C.',
+        'Washington': 'Washington (state)',
+        'Virgin Islands': 'the United States Virgin Islands',}
+    if state in different:
+        state = different[state]
+    state = state.replace(' ', '_')
+    actual_url = url.format(state)
+    response = requests.get(actual_url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    table = soup.find('table', {'class':'infobox'})
+    confirmed = None
+    deaths = None
+    for tbody in table.findAll('tbody'):
+        for item in tbody.findAll('tr'):
+            th = item.find('th')
+            if th:
+                th_text = th.text.lower()
+                if 'confirmed' in th_text:
+                    if not 'map' in th_text:
+                        confirmed = get_wiki_num(item)
+                if 'deaths' in th_text:
+                    deaths = get_wiki_num(item)
+    return confirmed, deaths
+
+
+def get_wikipedia_df():
+
+    output = Output()
+    for state in STATE_TABLE.keys():
+        try:
+            confirmed, deaths = get_wiki_for_state(state)
+        except:
+            traceback.print_exc()
+            continue
+        output.add_row(state, confirmed, deaths, 0)
+    return output.get_df('wikipedia')
 
 
 def df_get_states(row):

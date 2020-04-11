@@ -77,33 +77,57 @@ def read_files(dirpath):
 
                 dt = datetime.strptime(filename.rstrip('.csv'), DATETIME_FORMAT)
                 table[key] = dt
-    return table
+    
+    rows = []
+    for key in table:
+        (state, confirmed, deaths) = key
+        timestamp = table[key].strftime('%Y-%m-%d %H:%M')
+        rows.append((state, timestamp, confirmed, deaths))
+
+    return rows
 
 
-def write_final_csv(dirpath, table):
+def write_final_csv(dirpath, rows):
 
     output_filepath = os.path.join(dirpath, 'historical.csv')
+
     with open(output_filepath, mode='w') as fh:
-
         fieldnames = ['state', 'confirmed', 'deaths', 'timestamp']
-        csv_writer = csv.DictWriter(fh, fieldnames=fieldnames)
-        csv_writer.writeheader()
+        csv_writer = csv.writer(fh)
+        csv_writer.writerow(fieldnames)
+        for row in rows:
+            csv_writer.writerow(row)
 
-        for key in table:
-
-            (state, confirmed, deaths) = key
-            timestamp = table[key].strftime('%Y-%m-%d %H:%M')
-            row_dict = {'state': state, 
-                'confirmed':confirmed, 
-                'deaths':deaths, 
-                'timestamp': timestamp}
-            csv_writer.writerow(row_dict)
     print()
     print("OUTPUT: " + os.path.abspath(output_filepath))
 
 
+def remove_rows(rows): # Remove rows from bad data
+    rows = sorted(rows)
+    prev = rows[0]
+    to_remove = set()
+    for idx, cur_row in enumerate(rows):
+        state, timestamp, confirmed, deaths = cur_row
+        prev_s, prev_t, prev_c, prev_d = prev
+        if state == prev_s:
+            if deaths < prev_d:
+                if rows[idx-1][-1] > rows[idx+1][-1]:
+                    to_remove.add(idx-1)
+                else:
+                    to_remove.add(idx)
+        prev = cur_row
+
+    to_keep = []
+    for idx, cur_row in enumerate(rows):
+        if idx not in to_remove:
+            to_keep.append(cur_row)
+
+    return to_keep
+
+
 if __name__ == '__main__':
     download_files(DIRNAME)
-    table = read_files(DIRNAME)
-    write_final_csv(DIRNAME, table)
+    rows = read_files(DIRNAME)
+    rows = remove_rows(rows)
+    write_final_csv(DIRNAME, rows)
 

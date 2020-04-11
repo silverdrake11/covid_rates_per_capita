@@ -1,4 +1,4 @@
-A US states map polling coronavirus cases reported from Worldometer and the JHU data, refreshing every hour (when new data is available). The cases are divided by population of each state to get a per capita estimate. https://us-covid19-per-capita.net
+A US states map polling coronavirus cases reported from Worldometer and the JHU data and also Wikipedia, refreshing every hour (when new data is available). The cases are divided by population of each state to get a per capita estimate. https://us-covid19-per-capita.net
 
 ## Downloading the data
 
@@ -6,8 +6,8 @@ When new data is available, it is updated in [data.csv](https://github.com/silve
 
 All of the snapshots are then added to one file `historical.csv`. Which looks like this
 
-| states | confirmed     | deaths | timestamp        | 
-| ------ | ------------- | ------ | ---------------- |
-| AZ     | 2575          | 73     | 2020-04-07 17:07 |
-| AZ     | 2851          | 73     | 2020-04-07 20:22 |
-| CA     | 1249          | 24     | 2020-03-21 19:20 |
+| states | timestamp        | confirmed     | deaths |
+| ------ | ---------------- | ------------- | ------ |
+| AZ     | 2020-04-07 17:07 | 2575          | 73     |
+| AZ     | 2020-04-07 20:22 | 2851          | 73     |
+| CA     | 2020-03-21 19:20 | 1249          | 24     |
