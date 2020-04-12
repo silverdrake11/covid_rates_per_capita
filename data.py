@@ -17,6 +17,7 @@ DATA_FILENAME = 'data.json'
 CODES_TABLE = {v: k for k, v in STATE_TABLE.items()}
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:74.0) Gecko/20100101 Firefox/74.0'
 
+
 def get_rate(confirmed, state):
     pop = POP_TABLE[state]
     return (10000 * confirmed)/pop
@@ -158,7 +159,7 @@ def get_arcgis_df():
         
         confirmed = details['Confirmed']
         deaths = details['Deaths']
-        recovered = details['Recovered']
+        recovered = 0 # For now
 
         output.add_row(state, confirmed, deaths, recovered)
 
@@ -176,7 +177,6 @@ def get_wiki_num(item):
 def request_wikipedia(state):
     time.sleep(0.2)
     url = 'https://en.wikipedia.org/wiki/2020_coronavirus_pandemic_in_{}'
-    print(state, end=' ', flush=True)
     different = {'New York': 'New York (state)',
         'Georgia': 'Georgia (U.S. state)',
         'District Of Columbia': 'Washington, D.C.',
@@ -186,7 +186,7 @@ def request_wikipedia(state):
         state = different[state]
     state = state.replace(' ', '_')
     actual_url = url.format(state)
-    response = requests.get(actual_url, headers={'User-Agent': USER_AGENT}, timeout=5)
+    response = requests.get(actual_url, headers={'User-Agent': USER_AGENT}, timeout=1)
     return response.text
 
 
@@ -218,7 +218,12 @@ def get_wikipedia_df():
         except:
             traceback.print_exc()
             continue
-        output.add_row(state, confirmed, deaths, 0)
+        status = state
+        if confirmed is None or deaths is None:
+            status = status + '_FAILED'
+        else:
+            output.add_row(state, confirmed, deaths, 0)
+        print(status, end=' ', flush=True)
     print('')
     return output.get_df('wikipedia')
 
