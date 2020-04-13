@@ -95,7 +95,7 @@ def write_final_csv(dirpath, rows):
     output_filepath = os.path.join(dirpath, CSV_FILENAME)
 
     with open(output_filepath, mode='w') as fh:
-        fieldnames = ['state', 'confirmed', 'deaths', 'timestamp']
+        fieldnames = ['state', 'timestamp', 'confirmed', 'deaths']
         csv_writer = csv.writer(fh)
         csv_writer.writerow(fieldnames)
         for row in rows:
@@ -131,13 +131,6 @@ def is_bad_row(rows, cur_idx):
             return cur_idx
 
 
-def print_row(rows, idx, removed):
-    text = ' '.join([str(x) for x in rows[idx]])
-    if idx == removed:
-        text += ' x'
-    print(text)
-
-
 def remove_rows(rows):
     '''
     Remove rows where number of deaths in next row is greater than previous row..
@@ -153,15 +146,6 @@ def remove_rows(rows):
         bad_row_idx = is_bad_row(rows, idx)
         if bad_row_idx:
             to_remove.add(bad_row_idx)
-            #print()
-            #print_row(rows, idx-3, bad_row_idx)
-            #print_row(rows, idx-2, bad_row_idx)
-            #print_row(rows, idx-1, bad_row_idx)
-            #print_row(rows, idx+0, bad_row_idx)
-            #print_row(rows, idx+1, bad_row_idx)
-            #print_row(rows, idx+2, bad_row_idx)
-            #print_row(rows, idx+3, bad_row_idx)
-            #print()
                     
     to_keep = [rows[idx] for idx in range(num_rows) if idx not in to_remove]
 
@@ -182,5 +166,3 @@ def download_and_write_historical():
  
 if __name__ == '__main__':
     download_and_write_historical()
-
-
