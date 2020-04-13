@@ -6,6 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from pleth import write_plot, get_cur_time
+from download import download_and_write_historical
 
 
 def get_confirmed():
@@ -26,12 +27,16 @@ def run_git(*commands, files=[]):
 
 prev_label = get_confirmed()
 while True:
-    files = ['index.html', 'data.csv', 'deaths.html']
+    files = ['index.html', 'data.csv', 'deaths.html', 'historical.zip']
     run_git('checkout', files=files)
     run_git('pull')
     try:
         label = write_plot()
         if label != prev_label:
+            try:
+                download_and_write_historical()
+            except:
+                traceback.print_exc()
             run_git('add', files=files)
             run_git('commit','-m', 'Data update', files=files)
             run_git('push')

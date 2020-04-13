@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import time
+import zipfile
 from datetime import datetime
 from urllib.request import urlopen
 
@@ -9,6 +10,7 @@ from urllib.request import urlopen
 COMMITS_URL = 'https://api.github.com/repos/silverdrake11/covid_rates_per_capita/commits?page={}&path=data.csv&per_page={}'
 CONTENTS_URL = 'https://raw.githubusercontent.com/silverdrake11/covid_rates_per_capita/{}/data.csv'
 DIRNAME = 'historical'
+CSV_FILENAME = 'historical.csv'
 DATETIME_FORMAT = '%Y-%m-%d-%H-%M'
 
 
@@ -43,7 +45,8 @@ def download_files(dirpath):
         filename = datetime_obj.strftime(DATETIME_FORMAT + '.csv')
         filepath = os.path.join(dirpath, filename)
         if os.path.isfile(filepath):
-            print('{} already exists'.format(filename))
+            pass
+            #print('{} already exists'.format(filename))
         else:
             print(filepath)
             with open(filepath, 'wb') as fh:
@@ -89,7 +92,7 @@ def read_files(dirpath):
 
 def write_final_csv(dirpath, rows):
 
-    output_filepath = os.path.join(dirpath, 'historical.csv')
+    output_filepath = os.path.join(dirpath, CSV_FILENAME)
 
     with open(output_filepath, mode='w') as fh:
         fieldnames = ['state', 'confirmed', 'deaths', 'timestamp']
@@ -102,32 +105,82 @@ def write_final_csv(dirpath, rows):
     print("OUTPUT: " + os.path.abspath(output_filepath))
 
 
-def remove_rows(rows): # Remove rows from bad data
-    rows = sorted(rows)
-    prev = rows[0]
-    to_remove = set()
-    for idx, cur_row in enumerate(rows):
-        state, timestamp, confirmed, deaths = cur_row
-        prev_s, prev_t, prev_c, prev_d = prev
-        if state == prev_s:
-            if deaths < prev_d:
-                if rows[idx-1][-1] > rows[idx+1][-1]:
-                    to_remove.add(idx-1)
-                else:
-                    to_remove.add(idx)
-        prev = cur_row
+def get_state_deaths(row):
+    return row[0], row[3]
 
-    to_keep = []
-    for idx, cur_row in enumerate(rows):
-        if idx not in to_remove:
-            to_keep.append(cur_row)
+
+def is_bad_row(rows, cur_idx):
+    '''There are a few edge cases here'''
+
+    if not cur_idx: # First one should not be removed
+        return None
+
+    prev_idx = cur_idx - 1
+    next_idx = cur_idx + 1
+
+    prev_state, prev_deaths = get_state_deaths(rows[prev_idx])
+    cur_state, cur_deaths = get_state_deaths(rows[cur_idx])
+
+    if prev_state == cur_state:
+        if prev_deaths > cur_deaths:
+            if next_idx < len(rows): # Special case where prev value is bad
+                next_state, next_deaths = get_state_deaths(rows[next_idx])
+                if next_state == cur_state:
+                    if prev_deaths > next_deaths:
+                        return prev_idx
+            return cur_idx
+
+
+def print_row(rows, idx, removed):
+    text = ' '.join([str(x) for x in rows[idx]])
+    if idx == removed:
+        text += ' x'
+    print(text)
+
+
+def remove_rows(rows):
+    '''
+    Remove rows where number of deaths in next row is greater than previous row..
+    How did these rows get there? Either the source made a mistake or I made a 
+    mistake.
+    '''
+
+    rows = sorted(rows)
+    num_rows = len(rows)
+
+    to_remove = set()
+    for idx in range(num_rows):
+        bad_row_idx = is_bad_row(rows, idx)
+        if bad_row_idx:
+            to_remove.add(bad_row_idx)
+            #print()
+            #print_row(rows, idx-3, bad_row_idx)
+            #print_row(rows, idx-2, bad_row_idx)
+            #print_row(rows, idx-1, bad_row_idx)
+            #print_row(rows, idx+0, bad_row_idx)
+            #print_row(rows, idx+1, bad_row_idx)
+            #print_row(rows, idx+2, bad_row_idx)
+            #print_row(rows, idx+3, bad_row_idx)
+            #print()
+                    
+    to_keep = [rows[idx] for idx in range(num_rows) if idx not in to_remove]
+
+    print("Removed {} rows!".format(len(to_remove)))
 
     return to_keep
 
 
-if __name__ == '__main__':
+def download_and_write_historical():
     download_files(DIRNAME)
     rows = read_files(DIRNAME)
     rows = remove_rows(rows)
+    rows = remove_rows(rows) # Run twice to catch any consecutive ones
     write_final_csv(DIRNAME, rows)
+    csv_filepath = os.path.join(DIRNAME, CSV_FILENAME)
+    zipfile.ZipFile('historical.zip', 'w', zipfile.ZIP_DEFLATED).write(csv_filepath)
+
+ 
+if __name__ == '__main__':
+    download_and_write_historical()
+
 

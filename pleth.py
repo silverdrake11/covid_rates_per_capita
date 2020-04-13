@@ -34,7 +34,7 @@ def get_most_recent_df():
         df = df.append(data.get_worldometer_df())
     except:
         traceback.print_exc()
-    try: # In case the data we already have is most recent (for example if the other sources break)
+    try: 
         df = df.append(data.get_wikipedia_df())
     except:
         traceback.print_exc()
