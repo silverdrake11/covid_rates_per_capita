@@ -69,6 +69,14 @@ def clean_num(num_str):
         return 0
 
 
+def format_state(state):
+    state = state.strip()
+    state = state.title()
+    if 'Virgin Islands' in state:
+        state = 'Virgin Islands'
+    return state
+
+
 def get_worldometer_df():
 
     url = 'https://www.worldometers.info/coronavirus/country/us/'
@@ -82,10 +90,7 @@ def get_worldometer_df():
         for item in tbody.findAll('tr'):
 
             row = item.findAll('td')
-            state = row[0].text.strip()
-            state = state.title()
-            if 'Virgin Islands' in state:
-                state = 'Virgin Islands'
+            state = format_state(row[0].text)
 
             if state not in STATE_TABLE:
                 print(state)
@@ -226,6 +231,33 @@ def get_wikipedia_df():
         print(status, end=' ', flush=True)
     print('')
     return output.get_df('wikipedia')
+
+
+def get_bno_df():
+    url = 'https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?headers=false&gid=1902046093&range=A1:I69'
+    response = requests.get(url)
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    table = soup.body.table
+
+    output = Output()
+    for tbody in table.findAll('tbody'):
+        for item in tbody.findAll('tr'):
+
+            row = item.findAll('td')
+            state = format_state(row[0].text)
+
+            if state not in STATE_TABLE:
+                print(state)
+                continue
+
+            confirmed = clean_num(row[1].text)
+            deaths = clean_num(row[3].text)
+            recovered = 0 # Will fill in later
+
+            output.add_row(state, confirmed, deaths, recovered)
+
+    return output.get_df('bno')
 
 
 def df_get_states(row):

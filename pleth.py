@@ -38,11 +38,17 @@ def get_most_recent_df():
         df = df.append(data.get_wikipedia_df())
     except:
         traceback.print_exc()
+    try: 
+        df = df.append(data.get_bno_df())
+    except:
+        traceback.print_exc()
 
     df = df.astype({'confirmed':int, 'deaths':int, 'recovered':int}) # Make sure they are ints
 
     # Keep rows that are most recent (sort by deaths, if tie then confirmed)
-    df = df.sort_values(['deaths', 'confirmed']).drop_duplicates('codes', keep='last')
+    df = df.sort_values(['deaths', 'confirmed'])
+    df = df.drop_duplicates('codes', keep='last')
+    print(df.source.value_counts())
 
     return df
 
@@ -129,7 +135,6 @@ def write_deaths_page(df, total_confirmed, total_deaths,  time_updated):
 def write_plot():
 
     df = get_most_recent_df()
-    print(df.source.value_counts())
 
     # Write csv
     csv_df = df[['codes','confirmed','deaths','recovered']]
