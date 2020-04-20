@@ -101,7 +101,6 @@ def write_final_csv(dirpath, rows):
         for row in rows:
             csv_writer.writerow(row)
 
-    print()
     print("OUTPUT: " + os.path.abspath(output_filepath))
 
 
