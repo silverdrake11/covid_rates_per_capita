@@ -173,7 +173,7 @@ def get_arcgis_df():
 
 def get_wiki_num(item):
     num = item.find('td').text.strip()
-    num = re.split('\[|\(|[a-zA-Z]', num)[0]
+    num = re.split(r'[\[(\-a-zA-Z]', num)[0]
     num = num.replace(',','')
     return int(num)
 

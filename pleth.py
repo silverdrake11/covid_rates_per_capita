@@ -28,19 +28,19 @@ def get_most_recent_df():
     df = pd.DataFrame()
     try:
         df = df.append(data.get_arcgis_df())
-    except:
+    except Exception:
         traceback.print_exc()
     try:
         df = df.append(data.get_worldometer_df())
-    except:
+    except Exception:
         traceback.print_exc()
     try: 
         df = df.append(data.get_wikipedia_df())
-    except:
+    except Exception:
         traceback.print_exc()
     try: 
         df = df.append(data.get_bno_df())
-    except:
+    except Exception:
         traceback.print_exc()
 
     df = df.astype({'confirmed':int, 'deaths':int, 'recovered':int}) # Make sure they are ints

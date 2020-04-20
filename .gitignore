@@ -1,2 +1,4 @@
 __pycache__/
 historical/
+.DS_Store
+data.json
