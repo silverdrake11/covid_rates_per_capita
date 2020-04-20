@@ -106,7 +106,7 @@ def write_final_csv(dirpath, rows):
 
 
 def get_state_deaths(row):
-    return row[0], row[3]
+    return row[0], row[2], row[3]
 
 
 def is_bad_row(rows, cur_idx):
@@ -118,17 +118,32 @@ def is_bad_row(rows, cur_idx):
     prev_idx = cur_idx - 1
     next_idx = cur_idx + 1
 
-    prev_state, prev_deaths = get_state_deaths(rows[prev_idx])
-    cur_state, cur_deaths = get_state_deaths(rows[cur_idx])
+    prev_state, prev_cases, prev_deaths = get_state_deaths(rows[prev_idx])
+    cur_state, cur_cases, cur_deaths = get_state_deaths(rows[cur_idx])
 
     if prev_state == cur_state:
         if prev_deaths > cur_deaths:
             if next_idx < len(rows): # Special case where prev value is bad
-                next_state, next_deaths = get_state_deaths(rows[next_idx])
+                next_state, next_cases, next_deaths = get_state_deaths(rows[next_idx])
                 if next_state == cur_state:
                     if prev_deaths > next_deaths:
                         return prev_idx
             return cur_idx
+        if prev_cases > cur_cases:
+            if prev_deaths >= cur_deaths or ((prev_cases - cur_cases) <= (cur_deaths - prev_deaths)):
+                if next_idx < len(rows): # Special case where prev value is bad
+                    next_state, next_cases, next_deaths = get_state_deaths(rows[next_idx])
+                    if next_state == cur_state:
+                        if prev_cases > next_cases:
+                            return prev_idx
+                return cur_idx
+
+
+def print_row(rows, idx, removed):
+    text = ' '.join([str(x) for x in rows[idx][0:4]])
+    if idx == removed:
+        text += ' x'
+    print(text)
 
 
 def remove_rows(rows):
@@ -146,6 +161,19 @@ def remove_rows(rows):
         bad_row_idx = is_bad_row(rows, idx)
         if bad_row_idx:
             to_remove.add(bad_row_idx)
+
+            print()
+            print_row(rows, idx-3, bad_row_idx)
+            print_row(rows, idx-2, bad_row_idx)
+            print_row(rows, idx-1, bad_row_idx) # prev
+            print_row(rows, idx+0, bad_row_idx) # cur
+            print_row(rows, idx+1, bad_row_idx) # next
+            print_row(rows, idx+2, bad_row_idx)
+            print_row(rows, idx+3, bad_row_idx)
+            prev_state, prev_cases, prev_deaths = get_state_deaths(rows[idx-1])
+            cur_state, cur_cases, cur_deaths = get_state_deaths(rows[idx])
+            print((prev_cases - cur_cases), (cur_deaths - prev_deaths))
+            print()
                     
     to_keep = [rows[idx] for idx in range(num_rows) if idx not in to_remove]
 
