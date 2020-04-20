@@ -139,20 +139,12 @@ def is_bad_row(rows, cur_idx):
                 return cur_idx
 
 
-def print_row(rows, idx, removed):
-    text = ' '.join([str(x) for x in rows[idx][0:4]])
-    if idx == removed:
-        text += ' x'
-    print(text)
-
-
 def remove_rows(rows):
     '''
     Remove rows where number of deaths in next row is greater than previous row..
     How did these rows get there? Either the source made a mistake or I made a 
     mistake.
     '''
-
     rows = sorted(rows)
     num_rows = len(rows)
 
@@ -161,19 +153,6 @@ def remove_rows(rows):
         bad_row_idx = is_bad_row(rows, idx)
         if bad_row_idx:
             to_remove.add(bad_row_idx)
-
-            print()
-            print_row(rows, idx-3, bad_row_idx)
-            print_row(rows, idx-2, bad_row_idx)
-            print_row(rows, idx-1, bad_row_idx) # prev
-            print_row(rows, idx+0, bad_row_idx) # cur
-            print_row(rows, idx+1, bad_row_idx) # next
-            print_row(rows, idx+2, bad_row_idx)
-            print_row(rows, idx+3, bad_row_idx)
-            prev_state, prev_cases, prev_deaths = get_state_deaths(rows[idx-1])
-            cur_state, cur_cases, cur_deaths = get_state_deaths(rows[idx])
-            print((prev_cases - cur_cases), (cur_deaths - prev_deaths))
-            print()
                     
     to_keep = [rows[idx] for idx in range(num_rows) if idx not in to_remove]
 
