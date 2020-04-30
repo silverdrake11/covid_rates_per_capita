@@ -42,6 +42,10 @@ def get_most_recent_df():
         df = df.append(data.get_bno_df())
     except Exception:
         traceback.print_exc()
+    try: 
+        df = df.append(data.get_covidtracking_df())
+    except Exception:
+        traceback.print_exc()
 
     df = df.astype({'confirmed':int, 'deaths':int, 'recovered':int}) # Make sure they are ints
 
@@ -49,6 +53,8 @@ def get_most_recent_df():
     df = df.sort_values(['deaths', 'confirmed'])
     df = df.drop_duplicates('codes', keep='last')
     print(df.source.value_counts())
+
+    df.to_csv('debug.csv',index=False)
 
     return df
 

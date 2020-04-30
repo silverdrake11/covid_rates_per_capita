@@ -260,6 +260,29 @@ def get_bno_df():
     return output.get_df('bno')
 
 
+def get_covidtracking_df():
+    url = 'https://covidtracking.com/api/v1/states/current.json'
+    response = requests.get(url)
+
+    output = Output()
+    for item in response.json():
+
+        code = item['state']
+        confirmed = item['positive']
+        deaths = item['death']
+        recovered = 0
+
+        if code not in CODES_TABLE:
+            print(code)
+            continue
+
+        state = CODES_TABLE[code]
+        
+        output.add_row(state, confirmed, deaths, recovered)
+
+    return output.get_df('covidtracking')
+
+
 def df_get_states(row):
   return CODES_TABLE[row['codes']]
 
