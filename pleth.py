@@ -120,7 +120,7 @@ def get_plot_html(df, colors_column, data_column):
         t=0,
         pad=0,
     )
-    fig.layout.hoverlabel = {'font_family':"Courier New"}
+    fig.layout.hoverlabel = {'font_family':"Courier New, Monospace"}
 
     plot_html = plotly.io.to_html(fig, 
         include_plotlyjs=False, 
