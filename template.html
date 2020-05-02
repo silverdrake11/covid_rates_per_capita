@@ -40,14 +40,14 @@
 
 </head>
 
-<body data-total="{{confirmed}}">
+<body data-total="{{confirmed}}" data-utc="{{utc}}">
   <main>
     <header>
     <h3>
       {{title}}
     </h3>
     <p> Confirmed {{"{:,}".format(confirmed)}} &nbsp; Deaths {{"{:,}".format(deaths)}}</p>
-    <p> <i>Updated {{updated}}</i> </p>
+    <p> <i> Updated <my-date id='time'> {{updated}} </my-date> </i> </p> 
     </header>
   </main>
   {{plot}}
@@ -58,14 +58,18 @@
     </p>
     {% block footer %}
       <p>
+        The embedded bar chart shows the trends in the previous 14 days, in each individual state. The y axis is the number of daily new confirmed cases, with the size relative to that particular state.
+      </p>
+      <p>
       For the deaths per state population, click <a href="deaths.html"> here.</a>
     </p>
       <p>
-      Sources are <a href="https://www.worldometers.info/coronavirus/country/us/"> Worldometer</a> and the <a href="https://coronavirus.jhu.edu/map.html"> JHU dashboard.</a>
+      Sources are <a href="https://www.worldometers.info/coronavirus/country/us/">Worldometer</a>, <a href="https://coronavirus.jhu.edu/map.html">JHU dashboard</a>, and the <a href="https://covidtracking.com/">COVID Tracking Project</a>.
 
       Code is on <a href="https://github.com/silverdrake11/covid_rates_per_capita"> GitHub.</a> Current data is <a href="data.csv"> here.</a> Historical data is <a href="historical.zip"> here.</a>
     </p>
     {% endblock %}
   </footer>
 </body>
+<script src="fixTimezone.js" type="text/javascript"></script> 
 </html>

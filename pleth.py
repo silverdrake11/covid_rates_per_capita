@@ -5,11 +5,12 @@ import traceback
 import jinja2
 import pandas as pd
 import plotly
-import plotly.express as px
+import plotly.graph_objects as go
 from bs4 import BeautifulSoup
 from pytz import timezone
 
 import data
+from chart import get_ascii_chart
 
 
 TITLE = "US Covid-19 Rates Per Capita"
@@ -20,7 +21,10 @@ TEMPLATE_FILENAME = 'template.html'
 
 
 def get_cur_time():
-    return datetime.now(timezone('America/Chicago')).strftime("%a %b %d %-I:%M %p CST")
+    return datetime.now(timezone('America/Chicago'))
+
+def format_time(datetime_obj):
+    return datetime_obj.strftime("%a %b %d %-I:%M %p CST")
 
 
 def get_most_recent_df():
@@ -59,18 +63,54 @@ def get_most_recent_df():
     return df
 
 
-def get_plot_html(df, colors_column):
+def format_rate_per_capita(value, data_column):
+    '''TODO refactor this code'''
+    if data_column == 'confirmed':
+        cases = 'cases'
+        population_size = '10k'
+        value = round(value, 1)
+    else:
+        cases = 'deaths'
+        population_size = '100k'
+        value = round(value)
 
-    fig = px.choropleth(df,
-        locationmode='USA-states', 
-        scope='usa',
-        color=colors_column, 
-        locations='codes',
-        hover_name='states', 
-        hover_data=['confirmed', 'deaths', colors_column], 
-        color_continuous_scale='sunsetdark',)
+    return "{} {} per {}".format(value, cases, population_size)
 
-    fig.layout.coloraxis.showscale = False
+
+def df_get_hover_text(row, colors_column, data_column):
+    ascii_chart =''
+    ascii_chart = get_ascii_chart(row['codes'], data_column).replace('\n','<br>')
+    per_capita_text = format_rate_per_capita(row[colors_column], data_column)
+    population_text = "{}m".format(round(row['pop'] / 1e6, 1))
+    text = ('<b>{}</b><br>'
+            '{} <br><br>' 
+            ' Confirmed:  {:,} <br>' 
+            ' Deaths:     {:,} <br>' 
+            ' Population: {} <br>'
+            '{}').format(row['states'], per_capita_text, row['confirmed'], 
+            row['deaths'], population_text, ascii_chart) # Debug
+    return text
+
+
+def get_plot_html(df, colors_column, data_column):
+    
+    df['text'] = df.apply(df_get_hover_text, args=(colors_column,data_column), axis=1)
+
+    choropleth = go.Choropleth(
+        locations=df['codes'],
+        z=df[colors_column],
+        locationmode = 'USA-states',
+        colorscale = 'sunsetdark',
+        hovertemplate = '%{text}<extra></extra>',
+        showscale=False,
+        text=df['text'],
+        )
+    fig = go.Figure(data=choropleth)
+
+    fig.layout.geo = {
+        'scope':'usa',
+        'showlakes':False,
+    }
     fig.layout.dragmode = False
     fig.layout.autosize = True
     fig.layout.margin=dict(
@@ -80,6 +120,7 @@ def get_plot_html(df, colors_column):
         t=0,
         pad=0,
     )
+    fig.layout.hoverlabel = {'font_family':"Courier New"}
 
     plot_html = plotly.io.to_html(fig, 
         include_plotlyjs=False, 
@@ -96,18 +137,19 @@ def get_plot_html(df, colors_column):
 
 def write_index_page(df, total_confirmed, total_deaths, time_updated):
 
-    plot_html = get_plot_html(df, 'rate')
+    plot_html = get_plot_html(df, 'rate', 'confirmed')
 
     text = open(TEMPLATE_FILENAME).read()
     t = jinja2.Template(text)
     rendered = t.render(plot=plot_html, 
             confirmed=total_confirmed,
             deaths=total_deaths,
-            updated=time_updated,
+            updated=format_time(time_updated),
             title=TITLE,
             html_title=HTML_TITLE,
             description=DESCRIPTION,
-            link=HOMEPAGE)
+            link=HOMEPAGE,
+            utc=time_updated.isoformat())
 
     with open('index.html', 'w') as fh:
         fh.write(rendered)
@@ -118,7 +160,7 @@ def write_deaths_page(df, total_confirmed, total_deaths,  time_updated):
     page_filename = 'deaths.html'
     description = 'A map of USA death rates per state population from the Coronavirus (in this case per 100,000 people). Tap or hover to display the numbers.'
 
-    plot_html = get_plot_html(df, 'drate') # Death rate
+    plot_html = get_plot_html(df, 'drate', 'deaths')
 
     # We need to do this b/c it refers to the other template
     template_loader = jinja2.FileSystemLoader(searchpath='./')
@@ -128,11 +170,12 @@ def write_deaths_page(df, total_confirmed, total_deaths,  time_updated):
     rendered = t.render(plot=plot_html, 
             confirmed=total_confirmed,
             deaths=total_deaths,
-            updated=time_updated,
+            updated=format_time(time_updated),
             title=TITLE.replace('Rates', 'Deaths'),
             html_title=HTML_TITLE.replace('Rates', 'Deaths'),
             description=description,
-            link=HOMEPAGE + '/' + page_filename)
+            link=HOMEPAGE + '/' + page_filename,
+            utc=time_updated.isoformat())
 
     with open(page_filename, 'w') as fh:
         fh.write(rendered)

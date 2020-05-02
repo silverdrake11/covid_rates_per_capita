@@ -58,6 +58,9 @@ STATE_TABLE = {
     'Wyoming': 'WY',}
 
 
+CODES_TABLE = {v: k for k, v in STATE_TABLE.items()}
+
+
 POP_TABLE = {
     'California':39937489,
     'Texas':29472295,

@@ -10,11 +10,10 @@ import requests
 from bs4 import BeautifulSoup
 from retrying import retry
 
-from tables import POP_TABLE, STATE_TABLE
+from tables import POP_TABLE, STATE_TABLE, CODES_TABLE
 
 
 DATA_FILENAME = 'data.json'
-CODES_TABLE = {v: k for k, v in STATE_TABLE.items()}
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:74.0) Gecko/20100101 Firefox/74.0'
 
 
@@ -298,8 +297,9 @@ def add_cols_to_df(df, source):
     df['states'] = df.apply(df_get_states, axis=1)
     df['rate'] = df.apply(df_get_rate, axis=1)
     df['drate'] = df.apply(df_get_death_rate, axis=1)
+    df['pop'] = df['states'].map(POP_TABLE)
     df.rate = df.rate.round(2)
-    df.drate = df.drate * 10
+    df.drate = df.drate * 10 # Scale death rate to per 100k
     df.drate = df.drate.round(2)
 
 
