@@ -79,7 +79,7 @@ def format_rate_per_capita(value, data_column):
 
 def df_get_hover_text(row, colors_column, data_column):
     ascii_chart =''
-    ascii_chart = get_ascii_chart(row['codes'], data_column).replace('\n','<br>')
+    ascii_chart = get_ascii_chart(row['codes'], data_column).replace('\n','<br>').replace(' ','&nbsp;')
     per_capita_text = format_rate_per_capita(row[colors_column], data_column)
     population_text = "{}m".format(round(row['pop'] / 1e6, 1))
     text = ('<b>{}</b><br>'
@@ -87,7 +87,7 @@ def df_get_hover_text(row, colors_column, data_column):
             ' Confirmed:  {:,} <br>' 
             ' Deaths:     {:,} <br>' 
             ' Population: {} <br>'
-            '{}').format(row['states'], per_capita_text, row['confirmed'], 
+            '<b>{}</b>').format(row['states'], per_capita_text, row['confirmed'], 
             row['deaths'], population_text, ascii_chart) # Debug
     return text
 
