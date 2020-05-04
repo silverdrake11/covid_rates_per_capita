@@ -9,7 +9,7 @@ from download import DIRNAME, CSV_FILENAME
 
 MAX_BINS = 10
 NUM_DAYS = 7
-CHART_CHAR = '─'
+CHART_CHAR = '-'
 
 
 def get_last_n(postal_code, column, num_days):
