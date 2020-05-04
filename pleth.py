@@ -87,7 +87,7 @@ def df_get_hover_text(row, colors_column, data_column):
             ' Confirmed:  {:,} <br>' 
             ' Deaths:     {:,} <br>' 
             ' Population: {} <br>'
-            '<b>{}</b>').format(row['states'], per_capita_text, row['confirmed'], 
+            '{}').format(row['states'], per_capita_text, row['confirmed'], 
             row['deaths'], population_text, ascii_chart) # Debug
     return text
 

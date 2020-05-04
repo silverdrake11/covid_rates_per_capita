@@ -7,9 +7,9 @@ from pytz import timezone
 from download import DIRNAME, CSV_FILENAME
 
 
-MAX_STARS = 4
-NUM_DAYS = 14
-CHART_CHAR = '|'
+MAX_BINS = 10
+NUM_DAYS = 7
+CHART_CHAR = '─'
 
 
 def get_last_n(postal_code, column, num_days):
@@ -32,32 +32,33 @@ def get_last_n(postal_code, column, num_days):
     todays_date = datetime.now(timezone(reference_tz)).date()
     idx = pd.date_range(todays_date - timedelta(NUM_DAYS), todays_date - timedelta(1))
     sr = sr.reindex(idx, fill_value=0)
+
+    dates = [x.date() for x in sr.index.tolist()]
     
-    return sr.tolist()
+    return sr.tolist(), dates
 
 
-def to_stars(nums, max_stars):
+def to_bins(nums, max_bins):
     max_value = max(nums)
     percentages = [num/max_value if num else 0 for num in nums]
-    return [round(percent*max_stars) for percent in percentages]
+    return [round(percent*max_bins) if percent>0 else 0 for percent in percentages]
 
 
-def get_ascii(nums):
-    left_pad = '  '
-    max_value = max(nums)
-    text = '\n' + left_pad
-    for height in reversed(range(1, max_value+1)):
-        for num in nums:
-            if num >= height:
-                text += CHART_CHAR
-            else:
-                text += ' '
-        text += '\n' + left_pad
+def get_ascii(values, dates):
+    text = '\n'
+    binned = to_bins(values, MAX_BINS)
+    for num, date, original_value in zip(binned, dates, values):
+        if original_value < 0:
+            original_value = ''
+        text += date.strftime('%-m/%d') + ' '
+        text += CHART_CHAR * num
+        text += ' ' * (MAX_BINS - num)
+        text += ' {}'.format(original_value)
+        text += '\n'
     return text.rstrip()
 
 
 def get_ascii_chart(postal_code, column):
-    nums = get_last_n(postal_code, column, NUM_DAYS)
-    stars = to_stars(nums, MAX_STARS)
-    return get_ascii(stars)
+    values, dates = get_last_n(postal_code, column, NUM_DAYS)
+    return get_ascii(values, dates)
 
