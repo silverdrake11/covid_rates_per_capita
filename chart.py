@@ -19,11 +19,11 @@ def get_last_n(postal_code, column, num_days):
     csv_filepath = os.path.join(DIRNAME, CSV_FILENAME)
     df = pd.read_csv(csv_filepath)
     df = df[df['state'] == postal_code]
-    df = df.sort_values(['timestamp'])
 
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df['timestamp'] = df['timestamp'].dt.tz_localize('utc').dt.tz_convert(reference_tz)
     df['dates'] = df['timestamp'].dt.date
+    df = df.sort_values(['dates', column])
 
     df = df.drop_duplicates('dates', keep='last')
     df = df.set_index(df['dates'])
