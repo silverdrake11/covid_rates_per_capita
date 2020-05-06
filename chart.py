@@ -30,7 +30,7 @@ def get_last_n(postal_code, column, num_days):
 
     sr = df[column].diff().dropna().astype(int)
     todays_date = datetime.now(timezone(reference_tz)).date()
-    idx = pd.date_range(todays_date - timedelta(NUM_DAYS), todays_date - timedelta(1))
+    idx = pd.date_range(todays_date - timedelta(NUM_DAYS), todays_date)
     sr = sr.reindex(idx, fill_value=0)
 
     dates = [x.date() for x in sr.index.tolist()]

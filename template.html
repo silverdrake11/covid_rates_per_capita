@@ -9,6 +9,7 @@
   <meta property="og:type"          content="website" />
   <meta property="og:title"         content="{{html_title}}" />
   <meta property="og:description"   content="{{description}}" />
+  <meta name=viewport content="width=device-width, initial-scale=1">
   <title>{{html_title}}</title>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-161615727-1"></script>
@@ -43,11 +44,11 @@
 <body data-total="{{confirmed}}" data-utc="{{utc}}">
   <main>
     <header>
-    <h3>
+    <h3 style="white-space: nowrap">
       {{title}}
     </h3>
-    <p> Confirmed {{"{:,}".format(confirmed)}} &nbsp; Deaths {{"{:,}".format(deaths)}}</p>
-    <p> <i> Updated <my-date id='time'> {{updated}} </my-date> </i> </p> 
+    <p> Confirmed&nbsp;{{"{:,}".format(confirmed)}} &nbsp; Deaths&nbsp;{{"{:,}".format(deaths)}}</p>
+    <p> <i> Updated <my-date style="white-space: nowrap" id='time'> {{updated}} </my-date> </i> </p> 
     </header>
   </main>
   {{plot}}
