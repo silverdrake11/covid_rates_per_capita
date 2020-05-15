@@ -5,7 +5,7 @@ import traceback
 import requests
 from bs4 import BeautifulSoup
 
-from pleth import write_plot, get_cur_time
+from pleth import write_plot, get_cur_time, format_time
 from download import download_and_write_historical
 
 
@@ -44,6 +44,6 @@ while True:
     except:
         traceback.print_exc()
 
-    print(get_cur_time())
+    print(format_time(get_cur_time()))
     print()
     time.sleep(3901)

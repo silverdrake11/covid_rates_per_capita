@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timedelta
 
+import requests
 import pandas as pd
 from pytz import timezone
 
@@ -10,32 +11,61 @@ from download import DIRNAME, CSV_FILENAME
 MAX_BINS = 10
 NUM_DAYS = 7
 CHART_CHAR = '-'
+REFERENCE_TZ = 'Pacific/Honolulu'
+HISTORICAL_URL = 'https://covidtracking.com/api/v1/states/{}/daily.json'
 
 
-def get_last_n(postal_code, column, num_days):
-    '''Gets last n confirmed cases or deaths for the last number of days'''
+def get_data_per_day_from_ctp(postal_code, column, num_days):
+    data = requests.get(HISTORICAL_URL.format(postal_code)).json()
+    values = []
+    dates = []
+    if column == 'deaths':
+        select = 'deathIncrease'
+    else:
+        select = 'positiveIncrease'
+    for item in data:
+        values.append(item[select])
+        date_obj = datetime.strptime(str(item['date']), '%Y%m%d')
+        date_obj = date_obj.replace(tzinfo=timezone(REFERENCE_TZ)).date()
+        dates.append(date_obj)
+    sr = pd.Series(values, index=dates)
+    return sr
 
-    reference_tz = 'Pacific/Honolulu'
+
+def get_data_per_day_from_file(postal_code, column, num_days):
     csv_filepath = os.path.join(DIRNAME, CSV_FILENAME)
     df = pd.read_csv(csv_filepath)
     df = df[df['state'] == postal_code]
 
     df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df['timestamp'] = df['timestamp'].dt.tz_localize('utc').dt.tz_convert(reference_tz)
+    df['timestamp'] = df['timestamp'].dt.tz_localize('utc').dt.tz_convert(REFERENCE_TZ)
     df['dates'] = df['timestamp'].dt.date
     df = df.sort_values(['dates', column])
 
     df = df.drop_duplicates('dates', keep='last')
     df = df.set_index(df['dates'])
 
-    sr = df[column].diff().dropna().astype(int)
-    todays_date = datetime.now(timezone(reference_tz)).date()
+    sr = df[column].diff()
+    return sr
+
+
+def get_last_n(postal_code, column, num_days):
+    '''Gets last n confirmed cases or deaths for the last number of days'''
+
+    todays_date = datetime.now(timezone(REFERENCE_TZ)).date()
     idx = pd.date_range(todays_date - timedelta(NUM_DAYS), todays_date)
+
+    sr = get_data_per_day_from_file(postal_code, column, num_days)
     sr = sr.reindex(idx, fill_value=0)
 
+    if any(sr<0) or postal_code == 'NY': # NY has alot of bad data
+        sr = get_data_per_day_from_ctp(postal_code, column, num_days)
+        sr = sr.reindex(idx, fill_value=0)
+
+    sr = sr.dropna().astype(int)
     dates = [x.date() for x in sr.index.tolist()]
-    
-    return sr.tolist(), dates
+    values = sr.tolist()
+    return values, dates
 
 
 def to_bins(nums, max_bins):
@@ -60,5 +90,6 @@ def get_ascii(values, dates):
 
 def get_ascii_chart(postal_code, column):
     values, dates = get_last_n(postal_code, column, NUM_DAYS)
+
     return get_ascii(values, dates)
 

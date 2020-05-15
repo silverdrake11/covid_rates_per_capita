@@ -15,11 +15,7 @@ from tables import POP_TABLE, STATE_TABLE, CODES_TABLE
 
 DATA_FILENAME = 'data.json'
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:74.0) Gecko/20100101 Firefox/74.0'
-
-
-def get_rate(confirmed, state):
-    pop = POP_TABLE[state]
-    return (10000 * confirmed)/pop
+SCALING_FACTOR = {'confirmed':10000, 'deaths':100000}
 
 
 def request_john_hopkins():
@@ -286,21 +282,18 @@ def get_covidtracking_df():
 def df_get_states(row):
   return CODES_TABLE[row['codes']]
 
-def df_get_rate(row):
-    return get_rate(row['confirmed'], row['states'])
 
-def df_get_death_rate(row):
-    return get_rate(row['deaths'], row['states'])
+def get_rate(df, column):
+    return (SCALING_FACTOR[column] * df[column]) / df['pop']
 
 
 def add_cols_to_df(df, source):
     df['source'] = source
     df['states'] = df.apply(df_get_states, axis=1)
-    df['rate'] = df.apply(df_get_rate, axis=1)
-    df['drate'] = df.apply(df_get_death_rate, axis=1)
     df['pop'] = df['states'].map(POP_TABLE)
+    df['rate'] = get_rate(df, 'confirmed')
+    df['drate'] = get_rate(df, 'deaths')
     df.rate = df.rate.round(2)
-    df.drate = df.drate * 10 # Scale death rate to per 100k
     df.drate = df.drate.round(2)
 
 

@@ -18,6 +18,8 @@ HTML_TITLE = TITLE + " (Coronavirus)"
 DESCRIPTION = "A map tracking the United States confirmed COVID-19 cases. The darker colors correspond to a greater rate per capita measurement."
 HOMEPAGE = 'https://us-covid19-per-capita.net'
 TEMPLATE_FILENAME = 'template.html'
+MILITARY_AND_OTHER_CASES = 0 #25963 TODO   
+MILITARY_AND_OTHER_DEATHS = 0 #1047 TODO
 
 
 def get_cur_time():
@@ -64,17 +66,15 @@ def get_most_recent_df():
 
 
 def format_rate_per_capita(value, data_column):
-    '''TODO refactor this code'''
     if data_column == 'confirmed':
         cases = 'cases'
-        population_size = '10k'
         value = round(value, 1)
     else:
         cases = 'deaths'
-        population_size = '100k'
         value = round(value)
+    population_size = int(data.SCALING_FACTOR[data_column] / 1000)
 
-    return "{} {} per {}".format(value, cases, population_size)
+    return "{} {} per {}k".format(value, cases, population_size)
 
 
 def df_get_hover_text(row, colors_column, data_column):
@@ -190,8 +190,8 @@ def write_plot():
     csv_df = csv_df.sort_values(['codes'])
     csv_df.to_csv('data.csv',index=False)
 
-    total_confirmed = df.confirmed.sum()
-    total_deaths = df.deaths.sum()
+    total_confirmed = df.confirmed.sum() + MILITARY_AND_OTHER_CASES
+    total_deaths = df.deaths.sum() + MILITARY_AND_OTHER_DEATHS
     time_updated = get_cur_time()
 
     write_index_page(df, total_confirmed, total_deaths, time_updated)
