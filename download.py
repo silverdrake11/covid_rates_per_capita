@@ -138,13 +138,19 @@ def is_bad_row(rows, cur_idx):
                 return cur_idx
 
 
+def test_func(row): # Sort by deaths, confirmed instead of by date (as some data is out of order)
+    row = list(row)
+    row[1] = row[1].split()[0]
+    return row[0],row[1],row[3],row[2]
+
+
 def remove_rows(rows):
     '''
     Remove rows where number of deaths in next row is greater than previous row..
     How did these rows get there? Either the source made a mistake or I made a 
     mistake.
     '''
-    rows = sorted(rows)
+    rows = sorted(rows, key=test_func)
     num_rows = len(rows)
 
     to_remove = set()
