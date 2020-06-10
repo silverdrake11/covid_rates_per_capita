@@ -58,7 +58,7 @@ def get_last_n(postal_code, column, num_days):
     sr = get_data_per_day_from_file(postal_code, column, num_days)
     sr = sr.reindex(idx, fill_value=0)
 
-    if any(sr<0) or postal_code in []: # Nothing in here right now
+    if any(sr<0) or postal_code in ['NY']: # Nothing in here right now
         sr = get_data_per_day_from_ctp(postal_code, column, num_days)
         sr = sr.reindex(idx, fill_value=0)
 
