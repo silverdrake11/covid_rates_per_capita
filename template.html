@@ -44,6 +44,15 @@
 <body data-total="{{confirmed}}" data-utc="{{utc}}">
   <main>
     <header>
+    <nav>
+    <ul>
+    {% block nav %}
+      <li>Total Cases</li>
+      <li><a href="recent.html">Recent Cases</a></li>
+      <li><a href="deaths.html">Total Deaths</a></li>
+    {% endblock %}
+    </ul>
+    </nav>
     <h3 style="white-space: nowrap">
       {{title}}
     </h3>

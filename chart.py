@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta
+from functools import lru_cache
 
 import requests
 import pandas as pd
@@ -48,24 +49,22 @@ def get_data_per_day_from_file(postal_code, column, num_days):
     sr = df[column].diff()
     return sr
 
-
-def get_last_n(postal_code, column, num_days):
+@lru_cache
+def get_last_n(postal_code, column):
     '''Gets last n confirmed cases or deaths for the last number of days'''
 
     todays_date = datetime.now(timezone(REFERENCE_TZ)).date()
     idx = pd.date_range(todays_date - timedelta(NUM_DAYS), todays_date)
 
-    sr = get_data_per_day_from_file(postal_code, column, num_days)
+    sr = get_data_per_day_from_file(postal_code, column, NUM_DAYS)
     sr = sr.reindex(idx, fill_value=0)
 
     if any(sr<0) or postal_code in ['WI','MN','NY']:
-        sr = get_data_per_day_from_ctp(postal_code, column, num_days)
+        sr = get_data_per_day_from_ctp(postal_code, column, NUM_DAYS)
         sr = sr.reindex(idx, fill_value=0)
 
     sr = sr.dropna().astype(int)
-    dates = [x.date() for x in sr.index.tolist()]
-    values = sr.tolist()
-    return values, dates
+    return sr
 
 
 def to_bins(nums, max_bins):
@@ -74,7 +73,9 @@ def to_bins(nums, max_bins):
     return [round(percent*max_bins) if percent>0 else 0 for percent in percentages]
 
 
-def get_ascii(values, dates):
+def get_ascii(sr):
+    dates = [x.date() for x in sr.index.tolist()]
+    values = sr.tolist()
     text = '\n'
     binned = to_bins(values, MAX_BINS)
     for num, date, original_value in zip(binned, dates, values):
@@ -89,7 +90,8 @@ def get_ascii(values, dates):
 
 
 def get_ascii_chart(postal_code, column):
-    values, dates = get_last_n(postal_code, column, NUM_DAYS)
-
-    return get_ascii(values, dates)
+    if column == 'recent':
+        column = 'confirmed'
+    sr = get_last_n(postal_code, column)
+    return get_ascii(sr)
 

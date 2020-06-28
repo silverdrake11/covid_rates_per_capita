@@ -15,7 +15,6 @@ from tables import POP_TABLE, STATE_TABLE, CODES_TABLE
 
 DATA_FILENAME = 'data.json'
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:74.0) Gecko/20100101 Firefox/74.0'
-SCALING_FACTOR = {'confirmed':10000, 'deaths':100000}
 
 
 def request_john_hopkins():
@@ -52,7 +51,7 @@ class Output:
 
     def get_df(self, source):
         df = pd.DataFrame(self.output)
-        add_cols_to_df(df, source)
+        df['source'] = source
         return df
 
 
@@ -277,27 +276,3 @@ def get_covidtracking_df():
         output.add_row(state, confirmed, deaths, recovered)
 
     return output.get_df('covidtracking')
-
-
-def df_get_states(row):
-  return CODES_TABLE[row['codes']]
-
-
-def get_rate(df, column):
-    return (SCALING_FACTOR[column] * df[column]) / df['pop']
-
-
-def add_cols_to_df(df, source):
-    df['source'] = source
-    df['states'] = df.apply(df_get_states, axis=1)
-    df['pop'] = df['states'].map(POP_TABLE)
-    df['rate'] = get_rate(df, 'confirmed')
-    df['drate'] = get_rate(df, 'deaths')
-    df.rate = df.rate.round(2)
-    df.drate = df.drate.round(2)
-
-
-def get_current_site_df():
-    df = pd.read_csv('data.csv')
-    add_cols_to_df(df, 'site')
-    return df
