@@ -10,7 +10,7 @@ def format_rate_per_capita(value, data_column):
     if data_column == 'confirmed':
         cases = 'cases'
         value = round(value, 1)
-    elif data_column == 'average':
+    elif data_column == 'recent':
         cases = 'recently'
         value = round(value)
     else:
