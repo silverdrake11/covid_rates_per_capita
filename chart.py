@@ -49,7 +49,7 @@ def get_data_per_day_from_file(postal_code, column, num_days):
     sr = df[column].diff()
     return sr
 
-@lru_cache
+@lru_cache()
 def get_last_n(postal_code, column):
     '''Gets last n confirmed cases or deaths for the last number of days'''
 
