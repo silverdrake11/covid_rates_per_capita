@@ -5,6 +5,7 @@ import traceback
 import requests
 from bs4 import BeautifulSoup
 
+from chart import get_last_n
 from pleth import write_plot, get_cur_time, format_time
 from download import download_and_write_historical
 
@@ -27,6 +28,7 @@ def run_git(*commands, files=[]):
 
 prev_label = get_confirmed()
 while True:
+    get_last_n.cache_clear()
     files = ['index.html', 'data.csv', 'deaths.html', 'recent.html', 'historical.zip']
     run_git('checkout', files=files)
     run_git('pull')
