@@ -59,9 +59,9 @@ def get_last_n(postal_code, column):
     sr = get_data_per_day_from_file(postal_code, column, NUM_DAYS)
     sr = sr.reindex(idx, fill_value=0)
 
-    #if any(sr<0) or postal_code in ['WI','MN','NY','TN']:
-    sr = get_data_per_day_from_ctp(postal_code, column, NUM_DAYS)
-    sr = sr.reindex(idx, fill_value=0)
+    if any(sr<0) or postal_code in []:
+        sr = get_data_per_day_from_ctp(postal_code, column, NUM_DAYS)
+        sr = sr.reindex(idx, fill_value=0)
 
     sr = sr.dropna().astype(int)
     return sr
@@ -69,7 +69,7 @@ def get_last_n(postal_code, column):
 
 def to_bins(nums, max_bins):
     max_value = max(nums)
-    percentages = [num/max_value if num else 0 for num in nums]
+    percentages = [num/max_value if (num>0) else 0 for num in nums]
     return [round(percent*max_bins) if percent>0 else 0 for percent in percentages]
 
 
