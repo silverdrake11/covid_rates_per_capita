@@ -64,18 +64,24 @@ def get_most_recent_df():
     except Exception:
         traceback.print_exc()
     try: 
+        df = df.append(data.get_bno_df())
+    except Exception:
+        traceback.print_exc()
+    try: 
         df = df.append(data.get_covidtracking_df())
     except Exception:
         traceback.print_exc()
 
     df = df.astype({'confirmed':int, 'deaths':int, 'recovered':int}) # Make sure they are ints
+    df.to_csv('debug1.csv',index=False)
 
     # Keep rows that are most recent (sort by deaths, if tie then confirmed)
+    df = df[df.duplicated(['codes','deaths','confirmed'], keep=False)] # Only keep records that more than one source agrees on
     df = df.sort_values(['deaths', 'confirmed'])
     df = df.drop_duplicates('codes', keep='last')
     print(df.source.value_counts())
 
     add_cols_to_df(df)
-    df.to_csv('debug.csv',index=False)
+    df.to_csv('debug2.csv',index=False)
 
     return df
