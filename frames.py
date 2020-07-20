@@ -76,7 +76,7 @@ def get_most_recent_df():
     df.to_csv('debug1.csv',index=False)
 
     # Keep rows that are most recent (sort by deaths, if tie then confirmed)
-    df = df[df.duplicated(['codes','deaths','confirmed'], keep=False)] # Only keep records that more than one source agrees on
+    #df = df[df.duplicated(['codes','deaths','confirmed'], keep=False)] # Only keep records that more than one source agrees on
     df = df.sort_values(['deaths', 'confirmed'])
     df = df.drop_duplicates('codes', keep='last')
     print(df.source.value_counts())
