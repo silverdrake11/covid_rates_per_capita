@@ -92,6 +92,8 @@ def get_ascii(sr):
 def get_ascii_chart(postal_code, column):
     if column == 'recent':
         column = 'confirmed'
+    if column == 'recentd':
+        column = 'deaths'
     sr = get_last_n(postal_code, column)
     return get_ascii(sr)
 

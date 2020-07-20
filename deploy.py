@@ -29,7 +29,7 @@ def run_git(*commands, files=[]):
 prev_label = get_confirmed()
 while True:
     get_last_n.cache_clear()
-    files = ['index.html', 'data.csv', 'deaths.html', 'recent.html', 'historical.zip']
+    files = ['index.html', 'data.csv', 'deaths.html', 'recent.html', 'recent_deaths.html','historical.zip']
     run_git('checkout', files=files)
     run_git('pull')
     try:

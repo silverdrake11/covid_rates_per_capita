@@ -5,7 +5,7 @@ from chart import get_last_n
 from tables import POP_TABLE, CODES_TABLE
 
 
-SCALING_FACTOR = {'confirmed':10000, 'deaths':100000, 'recent':100000}
+SCALING_FACTOR = {'confirmed':10000, 'deaths':100000, 'recent':100000, 'recentd':1000000}
 
 
 def df_get_states(row):
@@ -22,13 +22,21 @@ def df_get_recent_cases(row):
     return sr.sum()
 
 
+def df_get_recent_deaths(row):
+    sr = get_last_n(row['codes'], 'deaths')
+    sr = sr.drop(sr.tail(1).index) # Drop last value
+    return sr.sum()
+
+
 def add_cols_to_df(df):
     df['states'] = df.apply(df_get_states, axis=1)
     df['pop'] = df['states'].map(POP_TABLE)
     df['rate'] = get_rate(df, 'confirmed')
     df['drate'] = get_rate(df, 'deaths')
     df['recent'] = df.apply(df_get_recent_cases, axis=1)
+    df['recentd'] = df.apply(df_get_recent_deaths, axis=1)
     df['rrate'] = get_rate(df, 'recent')
+    df['rdrate'] = get_rate(df, 'recentd')
     df.rrate = df.rrate.round(2)
     df.rate = df.rate.round(2)
     df.drate = df.drate.round(2)

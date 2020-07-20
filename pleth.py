@@ -46,6 +46,13 @@ def write_index_page(df, total_confirmed, total_deaths, time_updated):
         fh.write(rendered)
 
 
+def load_jinja(template_name):
+    # We need to do this b/c it refers to the other template
+    template_loader = jinja2.FileSystemLoader(searchpath='./')
+    template_env = jinja2.Environment(loader=template_loader)
+    return template_env.get_template(template_name)
+
+
 def write_recent_page(df, total_confirmed, total_deaths, time_updated):
 
     page_filename = 'recent.html'
@@ -53,17 +60,35 @@ def write_recent_page(df, total_confirmed, total_deaths, time_updated):
 
     plot_html = get_plot_html(df, 'rrate', 'recent')
 
-    # We need to do this b/c it refers to the other template
-    template_loader = jinja2.FileSystemLoader(searchpath='./')
-    template_env = jinja2.Environment(loader=template_loader)
-    t = template_env.get_template('recent_template.html')
-
+    t = load_jinja('recent_template.html')
     rendered = t.render(plot=plot_html, 
             confirmed=total_confirmed,
             deaths=total_deaths,
             updated=format_time(time_updated),
             title=TITLE.replace('Rates', 'Recent Cases'),
             html_title=HTML_TITLE.replace('Rates', 'Recent Cases'),
+            description=description,
+            link=HOMEPAGE + '/' + page_filename,
+            utc=time_updated.isoformat())
+
+    with open(page_filename, 'w') as fh:
+        fh.write(rendered)
+
+
+def write_recent_deaths_page(df, total_confirmed, total_deaths, time_updated):
+
+    page_filename = 'recent_deaths.html'
+    description = 'A map of USA confirmed Coronavirus deaths in the past week (per state population).'
+
+    plot_html = get_plot_html(df, 'rdrate', 'recentd')
+
+    t = load_jinja('recent_deaths_template.html')
+    rendered = t.render(plot=plot_html, 
+            confirmed=total_confirmed,
+            deaths=total_deaths,
+            updated=format_time(time_updated),
+            title=TITLE.replace('Rates', 'Recent Deaths'),
+            html_title=HTML_TITLE.replace('Rates', 'Recent Deaths'),
             description=description,
             link=HOMEPAGE + '/' + page_filename,
             utc=time_updated.isoformat())
@@ -79,11 +104,7 @@ def write_deaths_page(df, total_confirmed, total_deaths,  time_updated):
 
     plot_html = get_plot_html(df, 'drate', 'deaths')
 
-    # We need to do this b/c it refers to the other template
-    template_loader = jinja2.FileSystemLoader(searchpath='./')
-    template_env = jinja2.Environment(loader=template_loader)
-    t = template_env.get_template('deaths_template.html')
-
+    t = load_jinja('deaths_template.html')
     rendered = t.render(plot=plot_html, 
             confirmed=total_confirmed,
             deaths=total_deaths,
@@ -114,6 +135,7 @@ def write_plot():
     write_index_page(df, total_confirmed, total_deaths, time_updated)
     write_deaths_page(df, total_confirmed, total_deaths, time_updated)
     write_recent_page(df, total_confirmed, total_deaths, time_updated)
+    write_recent_deaths_page(df, total_confirmed, total_deaths, time_updated)
 
     return total_confirmed # Used to check if there's changes in the data
 

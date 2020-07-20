@@ -1,12 +1,12 @@
 {% extends "template.html" %}
 {% block nav %}
   <li><a href="/">Total Cases</a></li>
-  <li>Recent Cases</li>
+  <li><a href="recent.html">Recent Cases</a></li>
   <li><a href="deaths.html">Total Deaths</a></li>
-  <li><a href="recent_deaths.html">Recent Deaths</a></li>
+  <li>Recent Deaths</li>
 {% endblock %}
 {% block footer %}
-<p>The embedded hover bar chart shows the trends in the <i>previous 7 days</i>, as do the colors. Darker means more cases in the <i>past week</i> per capita.
+<p>The embedded hover bar chart shows the trends in the <i>previous 7 days</i>, as do the colors. Darker means more deaths in the <i>past week</i> per capita.
 </p>
 <p>
 To go back to the homepage click <a href="/"> here.</a>
