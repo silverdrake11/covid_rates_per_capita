@@ -3,21 +3,22 @@ import plotly.graph_objects as go
 from bs4 import BeautifulSoup
 
 from chart import get_ascii_chart
-from frames import SCALING_FACTOR
+from frames import SCALING_FACTOR, ROUNDING_FACTOR
 
 
 def format_rate_per_capita(value, data_column):
     if data_column == 'confirmed':
         cases = 'cases'
-        value = round(value, 1)
     elif data_column == 'recent':
         cases = 'recently'
-        value = round(value)
     else:
         cases = 'deaths'
-        value = round(value)
     population_size = int(SCALING_FACTOR[data_column] / 1000)
-
+    rounding_factor = ROUNDING_FACTOR[data_column]
+    if rounding_factor:
+        value = round(value, rounding_factor)
+    else:
+        value = round(value)
     return "{} {} per {}k".format(value, cases, population_size)
 
 
