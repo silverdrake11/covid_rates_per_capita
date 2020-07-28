@@ -1,12 +1,17 @@
+import os
+import traceback
+
 import pandas as pd
 
 import data
 from chart import get_last_n
+from helpers import LOG_DIR
 from tables import POP_TABLE, CODES_TABLE
 
 
 SCALING_FACTOR = {'confirmed':100000, 'deaths':100000, 'recent':100000, 'recentd':100000}
 ROUNDING_FACTOR = {'confirmed':0, 'deaths':0, 'recent':0, 'recentd':1}
+
 
 def df_get_states(row):
   return CODES_TABLE[row['codes']]
@@ -73,7 +78,9 @@ def get_most_recent_df():
         traceback.print_exc()
 
     df = df.astype({'confirmed':int, 'deaths':int, 'recovered':int}) # Make sure they are ints
-    df.to_csv('debug1.csv',index=False)
+    if not os.path.isdir(LOG_DIR):
+        os.mkdir(LOG_DIR)
+    df.to_csv(os.path.join(LOG_DIR, 'debug1.csv'), index=False)
 
     # Keep rows that are most recent (sort by deaths, if tie then confirmed)
     df = df.sort_values(['deaths', 'confirmed'])
@@ -81,6 +88,6 @@ def get_most_recent_df():
     print(df.source.value_counts())
 
     add_cols_to_df(df)
-    df.to_csv('debug2.csv',index=False)
+    df.to_csv(os.path.join(LOG_DIR, 'debug2.csv'), index=False)
 
     return df

@@ -136,10 +136,7 @@ def request_arcgis():
     }
  
     response = requests.get(url, headers=headers)
-    with open(DATA_FILENAME, 'w') as fh:
-        fh.write(response.text)
-
-    return json.load(open(DATA_FILENAME))
+    return response.json()
 
 
 def get_arcgis_df():

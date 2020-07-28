@@ -1,11 +1,10 @@
 import os
-from datetime import datetime
-import traceback
 
 import jinja2
-from pytz import timezone
 
 import data
+from chart import get_last_n
+from helpers import STATIC_DIR, get_cur_time, format_time
 from frames import get_most_recent_df
 from plot import get_plot_html
 
@@ -14,16 +13,9 @@ TITLE = "US Covid-19 Rates Per Capita"
 HTML_TITLE = TITLE + " (Coronavirus)"
 DESCRIPTION = "A map tracking the United States confirmed COVID-19 cases. The darker colors correspond to a greater rate per capita measurement."
 HOMEPAGE = 'https://us-covid19-per-capita.net'
-TEMPLATE_FILENAME = 'template.html'
+TEMPLATE_FILENAME = 'templates/template.html'
 MILITARY_AND_OTHER_CASES = 0 #25963 TODO   
 MILITARY_AND_OTHER_DEATHS = 0 #1047 TODO
-
-
-def get_cur_time():
-    return datetime.now(timezone('America/Chicago'))
-
-def format_time(datetime_obj):
-    return datetime_obj.strftime("%a %b %d %-I:%M %p CST")
 
 
 def write_index_page(df, total_confirmed, total_deaths, time_updated):
@@ -42,20 +34,20 @@ def write_index_page(df, total_confirmed, total_deaths, time_updated):
             link=HOMEPAGE,
             utc=time_updated.isoformat())
 
-    with open('index.html', 'w') as fh:
+    with open(os.path.join(STATIC_DIR, 'index.html'), 'w') as fh:
         fh.write(rendered)
 
 
 def load_jinja(template_name):
     # We need to do this b/c it refers to the other template
-    template_loader = jinja2.FileSystemLoader(searchpath='./')
+    template_loader = jinja2.FileSystemLoader(searchpath='./templates')
     template_env = jinja2.Environment(loader=template_loader)
     return template_env.get_template(template_name)
 
 
 def write_recent_page(df, total_confirmed, total_deaths, time_updated):
 
-    page_filename = 'recent.html'
+    page_filename = os.path.join(STATIC_DIR, 'recent.html')
     description = 'A map of USA confirmed Coronavirus cases in the past week (per state population).'
 
     plot_html = get_plot_html(df, 'rrate', 'recent')
@@ -77,7 +69,7 @@ def write_recent_page(df, total_confirmed, total_deaths, time_updated):
 
 def write_recent_deaths_page(df, total_confirmed, total_deaths, time_updated):
 
-    page_filename = 'recent_deaths.html'
+    page_filename = os.path.join(STATIC_DIR, 'recent_deaths.html')
     description = 'A map of USA confirmed Coronavirus deaths in the past week (per state population).'
 
     plot_html = get_plot_html(df, 'rdrate', 'recentd')
@@ -99,7 +91,7 @@ def write_recent_deaths_page(df, total_confirmed, total_deaths, time_updated):
 
 def write_deaths_page(df, total_confirmed, total_deaths,  time_updated):
 
-    page_filename = 'deaths.html'
+    page_filename = os.path.join(STATIC_DIR, 'deaths.html')
     description = 'A map of USA death rates per state population from the Coronavirus (in this case per 100,000 people). Tap or hover to display the numbers.'
 
     plot_html = get_plot_html(df, 'drate', 'deaths')
@@ -120,6 +112,9 @@ def write_deaths_page(df, total_confirmed, total_deaths,  time_updated):
 
 
 def write_plot():
+
+    # Init
+    get_last_n.cache_clear()
 
     df = get_most_recent_df()
 

@@ -6,6 +6,8 @@ import zipfile
 from datetime import datetime
 from urllib.request import urlopen
 
+from helpers import STATIC_DIR
+
 
 COMMITS_URL = 'https://api.github.com/repos/silverdrake11/covid_rates_per_capita/commits?page={}&path=data.csv&per_page={}'
 CONTENTS_URL = 'https://raw.githubusercontent.com/silverdrake11/covid_rates_per_capita/{}/data.csv'
@@ -167,13 +169,18 @@ def remove_rows(rows):
 
 
 def download_and_write_historical():
+    if not os.path.isdir(DIRNAME):
+        os.mkdir(DIRNAME)
     download_files(DIRNAME)
     rows = read_files(DIRNAME)
     rows = remove_rows(rows)
     rows = remove_rows(rows) # Run twice to catch any consecutive ones
     write_final_csv(DIRNAME, rows)
     csv_filepath = os.path.join(DIRNAME, CSV_FILENAME)
-    zipfile.ZipFile('historical.zip', 'w', zipfile.ZIP_DEFLATED).write(csv_filepath)
+    if not os.path.isdir(STATIC_DIR):
+        os.mkdir(STATIC_DIR)
+    zip_filename = os.path.join(STATIC_DIR, 'historical.zip')
+    zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED).write(csv_filepath)
 
  
 if __name__ == '__main__':
