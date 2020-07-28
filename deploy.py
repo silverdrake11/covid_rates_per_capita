@@ -1,3 +1,4 @@
+import os
 import subprocess
 import time
 import traceback
@@ -26,7 +27,7 @@ def get_static_filenames():
     return files
 
 
-if '__name__' == '__main__':
+if __name__ == '__main__':
 
     prev_label = get_confirmed()
     while True:
