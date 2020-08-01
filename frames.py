@@ -84,7 +84,9 @@ def get_most_recent_df():
 
     # Keep rows that are most recent (sort by deaths, if tie then confirmed)
     df = df.sort_values(['deaths', 'confirmed'])
-    df = df.drop_duplicates('codes', keep='last')
+    grouped = df.groupby('codes')
+    df = grouped.nth(1) # Second most recent (to reduce errors)
+    df = df.reset_index()
     print(df.source.value_counts())
 
     add_cols_to_df(df)
