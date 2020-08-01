@@ -3,7 +3,7 @@ import time
 import requests
 from retrying import retry
 
-from helpers import get_confirmed, get_cur_time
+from helpers import get_confirmed, get_cur_time, format_time
 
 
 ALERTS = []
@@ -66,5 +66,5 @@ if __name__ == '__main__':
             prev_label = label
         except:
             traceback.print_exc()
-
+        print(format_time(get_cur_time()))
         time.sleep(7200)
