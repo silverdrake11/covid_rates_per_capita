@@ -6,6 +6,7 @@ import requests
 import pandas as pd
 from pytz import timezone
 
+from alerts import alert
 from download import DIRNAME, CSV_FILENAME
 
 
@@ -49,6 +50,7 @@ def get_data_per_day_from_file(postal_code, column, num_days):
     sr = df[column].diff()
     return sr
 
+
 @lru_cache()
 def get_last_n(postal_code, column):
     '''Gets last n confirmed cases or deaths for the last number of days'''
@@ -64,6 +66,15 @@ def get_last_n(postal_code, column):
         sr = sr.reindex(idx, fill_value=0)
 
     sr = sr.dropna().astype(int)
+
+    # If a value is really large, report it since it could be a mistake
+    if sr[-2] > 5:
+        if sr[-1] > (2 * sr[-2]):
+            alert(postal_code, column, sr[-2], sr[-1])
+    if sr[-3] > 5:
+        if sr[-2] <= 0:
+            alert(postal_code, column, sr[-2])
+
     return sr
 
 

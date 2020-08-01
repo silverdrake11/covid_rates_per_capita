@@ -3,6 +3,7 @@ import os
 import jinja2
 
 import data
+from alerts import ALERTS, post_alerts
 from chart import get_last_n
 from helpers import STATIC_DIR, get_cur_time, format_time
 from frames import get_most_recent_df
@@ -115,6 +116,7 @@ def write_plot():
 
     # Init
     get_last_n.cache_clear()
+    ALERTS.clear()
 
     df = get_most_recent_df()
 
@@ -132,6 +134,8 @@ def write_plot():
     write_recent_page(df, total_confirmed, total_deaths, time_updated)
     write_recent_deaths_page(df, total_confirmed, total_deaths, time_updated)
 
+    post_alerts()
+    
     return total_confirmed # Used to check if there's changes in the data
 
 
