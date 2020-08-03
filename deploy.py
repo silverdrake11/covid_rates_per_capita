@@ -3,6 +3,7 @@ import subprocess
 import time
 import traceback
 
+from alerts import post_alerts
 from helpers import STATIC_DIR, get_confirmed, get_cur_time, format_time
 from pleth import write_plot
 from download import download_and_write_historical
@@ -42,6 +43,7 @@ if __name__ == '__main__':
                     download_and_write_historical()
                 except:
                     traceback.print_exc()
+                post_alerts()
                 run_git('add', files=files)
                 run_git('commit','-m', 'Data update', files=files)
                 run_git('push')

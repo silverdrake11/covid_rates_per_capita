@@ -273,3 +273,38 @@ def get_covidtracking_df():
         output.add_row(state, confirmed, deaths, recovered)
 
     return output.get_df('covidtracking')
+
+
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
+def request_nyt_json(url):
+    response = requests.get(url)
+    return response.json()
+
+
+def get_nyt_df():
+    output = Output()
+    main_html = requests.get('https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html').text
+    index_url = re.search(r'https://static.*live_urls.json', main_html).group(0)
+    for key,item in requests.get(index_url).json().items():
+        if 'type' not in item:
+            continue
+        if item['type'] != 'state':
+            continue
+        state_html = requests.get(item['url']).text
+        json_url = re.search(r'https://static.*timeseries/en/USA-\d+.json', state_html).group(0)
+        try:
+            response = request_nyt_json(json_url)
+            item = response['data'][0]
+        except:
+            print('skip')
+            continue
+        state = item['display_name']
+        if state == 'Washington, D.C.':
+            state = 'District Of Columbia'
+        confirmed =  item['latest_cases']
+        deaths = item['latest_deaths']
+        output.add_row(state, confirmed, deaths, 0)
+    return output.get_df('nyt')
+
+
+
