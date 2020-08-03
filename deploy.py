@@ -41,9 +41,9 @@ if __name__ == '__main__':
             if label != prev_label:
                 try:
                     download_and_write_historical()
+                    post_alerts()
                 except:
                     traceback.print_exc()
-                post_alerts()
                 run_git('add', files=files)
                 run_git('commit','-m', 'Data update', files=files)
                 run_git('push')
