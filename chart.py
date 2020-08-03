@@ -73,7 +73,7 @@ def get_last_n(postal_code, column):
             alert(postal_code, column, sr[-2], sr[-1])
     if sr[-3] > 5:
         if sr[-2] <= 0:
-            alert(postal_code, column, sr[-2])
+            alert(postal_code, sr[-2])
 
     return sr
 
