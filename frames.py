@@ -84,10 +84,10 @@ def get_most_recent_df():
     df = df.astype({'confirmed':int, 'deaths':int, 'recovered':int}) # Make sure they are ints
     if not os.path.isdir(LOG_DIR):
         os.mkdir(LOG_DIR)
-    df.to_csv(os.path.join(LOG_DIR, 'debug1.csv'), index=False)
 
     # Keep rows that are most recent (sort by deaths, if tie then confirmed)
     df = df.sort_values(['deaths', 'confirmed'], ascending=False)
+    df.to_csv(os.path.join(LOG_DIR, 'debug1.csv'), index=False)
     grouped = df.groupby('codes')
     df = grouped.nth(1) # Second most recent (to reduce errors)
     df = df.reset_index()

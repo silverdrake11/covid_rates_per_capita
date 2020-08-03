@@ -1,9 +1,10 @@
 import time
 
 import requests
+from datetime import date, timedelta
 from retrying import retry
 
-from helpers import get_confirmed, get_cur_time, format_time
+from helpers import get_confirmed, format_time
 
 
 ALERTS = []
@@ -20,16 +21,16 @@ def get_credentials():
         return fh.read().split(':')[1].strip('/')
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=3)
 def get_comments():
-    date = get_cur_time().date().isoformat()
-    url = URL + '?since={}'.format(date)
+    date_str = (date.today() - timedelta(1)).isoformat()
+    url = URL + '?since={}'.format(date_str)
     response = requests.get(url)
     response.raise_for_status()
     return response.json()
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=3)
 def post_comment(credentials, comment):
     response = requests.post(URL, 
             headers={'Authorization': 'token ' + credentials}, 

@@ -301,6 +301,9 @@ def get_nyt_df():
         state = item['display_name']
         if state == 'Washington, D.C.':
             state = 'District Of Columbia'
+        if state not in STATE_TABLE:
+            print('nyt' + state)
+            continue
         confirmed =  item['latest_cases']
         deaths = item['latest_deaths']
         output.add_row(state, confirmed, deaths, 0)
