@@ -304,8 +304,8 @@ def get_nyt_df():
         if state not in STATE_TABLE:
             print('nyt' + state)
             continue
-        confirmed =  item['latest_cases']
-        deaths = item['latest_deaths']
+        confirmed =  item['latest']['cases']
+        deaths = item['latest']['deaths']
         output.add_row(state, confirmed, deaths, 0)
     return output.get_df('nyt')
 
