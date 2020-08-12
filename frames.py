@@ -69,10 +69,6 @@ def get_most_recent_df():
     except Exception:
         traceback.print_exc()
     try: 
-        df = df.append(data.get_bno_df())
-    except Exception:
-        traceback.print_exc()
-    try: 
         df = df.append(data.get_covidtracking_df())
     except Exception:
         traceback.print_exc()
