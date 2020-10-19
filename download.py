@@ -27,6 +27,8 @@ def get_commits():
         all_commits.extend(commits)
         num_commits = len(commits)
         page_num += 1
+        if page_num > 10: # To prevent rate limits
+            break
     return all_commits
 
 
