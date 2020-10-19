@@ -84,14 +84,14 @@ def get_worldometer_df():
         for item in tbody.findAll('tr'):
 
             row = item.findAll('td')
-            state = format_state(row[0].text)
+            state = format_state(row[1].text)
 
             if state not in STATE_TABLE:
                 print(state)
                 continue
 
-            confirmed = clean_num(row[1].text)
-            deaths = clean_num(row[3].text)
+            confirmed = clean_num(row[2].text)
+            deaths = clean_num(row[4].text)
             recovered = 0 # Will fill in later
 
             output.add_row(state, confirmed, deaths, recovered)
