@@ -8,6 +8,6 @@ All of the snapshots are then added to one file `historical.csv`. Which looks li
 
 | states | timestamp        | confirmed     | deaths |
 | ------ | ---------------- | ------------- | ------ |
-| AZ     | 2020-04-07 17:07 | 2575          | 73     |
+| AZ     | 2020-04-07 17:07 | 2576          | 73     |
 | AZ     | 2020-04-07 20:22 | 2851          | 73     |
 | CA     | 2020-03-21 19:20 | 1249          | 24     |
