@@ -4,7 +4,7 @@ import requests
 from datetime import date, timedelta
 from retrying import retry
 
-from helpers import get_confirmed, format_time
+from helpers import get_confirmed, format_time, get_cur_time
 
 
 ALERTS = []
