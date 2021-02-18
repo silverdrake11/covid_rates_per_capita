@@ -67,7 +67,7 @@ def get_most_recent_df():
     except Exception:
         errors.append(traceback.format_exc())
     try: 
-        df = df.append(data.get_wikipedia__df())
+        df = df.append(data.get_wikipedia_df())
     except Exception:
         errors.append(traceback.format_exc())
     try: 
