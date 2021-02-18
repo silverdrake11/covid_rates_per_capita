@@ -79,7 +79,7 @@ def get_most_recent_df():
     except Exception:
         errors.append(traceback.format_exc())
     if errors:
-        print(errors)
+        print(*errors)
         alert(*errors)
 
     df = df.astype({'confirmed':int, 'deaths':int, 'recovered':int}) # Make sure they are ints
