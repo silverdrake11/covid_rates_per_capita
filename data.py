@@ -285,6 +285,7 @@ def get_nyt_df():
     output = Output()
     main_html = requests.get('https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html').text
     index_url = re.search(r'https://static.*live_urls.json', main_html).group(0)
+    index_url = index_url.split('"')[-1]
     for key,item in requests.get(index_url).json().items():
         if 'type' not in item:
             continue
