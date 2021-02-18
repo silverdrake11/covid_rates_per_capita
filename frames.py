@@ -78,8 +78,9 @@ def get_most_recent_df():
         df = df.append(data.get_nyt_df())
     except Exception:
         errors.append(traceback.format_exc())
-    print(errors)
-    alert(errors)
+    if errors:
+        print(errors)
+        alert(*errors)
 
     df = df.astype({'confirmed':int, 'deaths':int, 'recovered':int}) # Make sure they are ints
     if not os.path.isdir(LOG_DIR):
