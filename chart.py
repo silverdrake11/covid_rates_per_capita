@@ -61,7 +61,7 @@ def get_last_n(postal_code, column):
     sr = get_data_per_day_from_file(postal_code, column, NUM_DAYS)
     sr = sr.reindex(idx, fill_value=0)
 
-    if any(sr<0) or postal_code in []:
+    if any(sr<0) or postal_code in ['OH']:
         sr = get_data_per_day_from_ctp(postal_code, column, NUM_DAYS)
         sr = sr.reindex(idx, fill_value=0)
 
@@ -69,7 +69,7 @@ def get_last_n(postal_code, column):
 
     # If a value is really large, report it since it could be a mistake
     if sr[-2] > 5:
-        if sr[-1] > (3 * sr[-2]):
+        if sr[-1] > (4 * sr[-2]):
             alert(postal_code, column, sr[-2], sr[-1])
     if sr[-3] > 5:
         if sr[-2] <= 0:
