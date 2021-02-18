@@ -4,6 +4,7 @@ import traceback
 import pandas as pd
 
 import data
+from alerts import alert
 from chart import get_last_n
 from helpers import LOG_DIR
 from tables import POP_TABLE, CODES_TABLE
@@ -55,27 +56,30 @@ def get_current_site_df():
 
 def get_most_recent_df():
 
+    errors = []
     df = pd.DataFrame()
     try:
         df = df.append(data.get_arcgis_df())
     except Exception:
-        traceback.print_exc()
+        errors.append(traceback.format_exc())
     try:
         df = df.append(data.get_worldometer_df())
     except Exception:
-        traceback.print_exc()
+        errors.append(traceback.format_exc())
     try: 
-        df = df.append(data.get_wikipedia_df())
+        df = df.append(data.get_wikipedia__df())
     except Exception:
-        traceback.print_exc()
+        errors.append(traceback.format_exc())
     try: 
         df = df.append(data.get_covidtracking_df())
     except Exception:
-        traceback.print_exc()
+        errors.append(traceback.format_exc())
     try:
         df = df.append(data.get_nyt_df())
     except Exception:
-        traceback.print_exc()
+        errors.append(traceback.format_exc())
+    print(errors)
+    alert(errors)
 
     df = df.astype({'confirmed':int, 'deaths':int, 'recovered':int}) # Make sure they are ints
     if not os.path.isdir(LOG_DIR):
