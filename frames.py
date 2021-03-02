@@ -25,12 +25,14 @@ def get_rate(df, column):
 def df_get_recent_cases(row):
     sr = get_last_n(row['codes'], 'confirmed')
     sr = sr.drop(sr.tail(1).index) # Drop last value
+    sr = sr[sr > 0]
     return sr.sum()
 
 
 def df_get_recent_deaths(row):
     sr = get_last_n(row['codes'], 'deaths')
     sr = sr.drop(sr.tail(1).index) # Drop last value
+    sr = sr[sr > 0]
     return sr.sum()
 
 
