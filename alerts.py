@@ -13,7 +13,9 @@ CREDENTIALS_FILENAME = 'credentials.txt'
 
 
 def alert(*stuff):
-    ALERTS.append(','.join(map(str, stuff)))
+    text = ','.join(map(str, stuff))
+    print(text)
+    ALERTS.append(text)
 
 
 def get_credentials():
