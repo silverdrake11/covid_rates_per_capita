@@ -93,7 +93,7 @@ def get_most_recent_df():
     df = df.sort_values(['codes','deaths', 'confirmed'], ascending=False)
     df.to_csv(os.path.join(LOG_DIR, 'debug1.csv'), index=False)
     grouped = df.groupby('codes')
-    df = grouped.nth(0)
+    df = grouped.nth(1) # Pick second highest value in case first is way off
     df = df.reset_index()
     print(df.source.value_counts())
 
