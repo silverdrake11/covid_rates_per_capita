@@ -61,6 +61,10 @@ def get_last_n(postal_code, column):
     sr = get_data_per_day_from_file(postal_code, column, NUM_DAYS)
     sr = sr.reindex(idx, fill_value=0)
 
+    if postal_code in ['PR']:
+        sr = get_data_per_day_from_ctp(postal_code, column, NUM_DAYS)
+        sr = sr.reindex(idx, fill_value=0)
+
     sr = sr.dropna().astype(int)
 
     # If a value is really large, report it since it could be a mistake
@@ -70,6 +74,10 @@ def get_last_n(postal_code, column):
     if sr[-3] > 5:
         if sr[-2] <= 0:
             alert(postal_code, sr[-2])
+
+    if column == 'confirmed':
+        sr[sr<0] = -1
+        sr = sr[~((sr-sr.median()).abs() > 4*sr.mad())]
 
     return sr
 
