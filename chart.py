@@ -61,10 +61,6 @@ def get_last_n(postal_code, column):
     sr = get_data_per_day_from_file(postal_code, column, NUM_DAYS)
     sr = sr.reindex(idx, fill_value=0)
 
-    if any(sr<0) or postal_code in ['']:
-        sr = get_data_per_day_from_ctp(postal_code, column, NUM_DAYS)
-        sr = sr.reindex(idx, fill_value=0)
-
     sr = sr.dropna().astype(int)
 
     # If a value is really large, report it since it could be a mistake
