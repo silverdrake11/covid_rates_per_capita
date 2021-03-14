@@ -101,6 +101,8 @@ def get_most_recent_df():
     df = df.sort_values(['codes','deaths', 'confirmed'], ascending=False)
     df.to_csv(os.path.join(LOG_DIR, 'debug0.csv'), index=False)
     df = df[df.source != 'previous']
+    df = df[(df.source != 'worldometer') & (df.source != 'NY')]
+    df = df[(df.source != 'old') & (df.source != 'NY')]
 
     # Filter out outliers
     gr = df.drop(columns=['recovered','source']).groupby('codes')
