@@ -275,10 +275,11 @@ def get_covidtracking_df():
     return output.get_df('covidtracking')
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
-def request_nyt_json(url):
-    response = requests.get(url)
-    return response.json()
+def get_nyt_json(state_html):
+    soup = BeautifulSoup(state_html, 'html.parser')
+    for soup_obj in soup.find_all('script',type="svelte-data"):
+        if soup_obj['url'].endswith('data.json'):
+            return json.loads(json.loads(soup_obj.contents[0])['body'])['location']
 
 
 def get_nyt_df():
@@ -292,21 +293,15 @@ def get_nyt_df():
         if item['type'] != 'state':
             continue
         state_html = requests.get(item['url']).text
-        json_url = re.search(r'https://static.*timeseries/en/USA-\d+.json', state_html).group(0)
-        try:
-            response = request_nyt_json(json_url)
-            item = response['data'][0]
-        except:
-            print('skip')
-            continue
-        state = item['display_name']
+        data = get_nyt_json(state_html)
+        state = data['metadata']['display_name']
         if state == 'Washington, D.C.':
             state = 'District Of Columbia'
         if state not in STATE_TABLE:
             print('nyt' + state)
             continue
-        confirmed =  item['latest']['cases']
-        deaths = item['latest']['deaths']
+        confirmed =  data['latest']['cases']
+        deaths = data['latest']['deaths']
         output.add_row(state, confirmed, deaths, 0)
     return output.get_df('nyt')
 
