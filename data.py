@@ -275,33 +275,23 @@ def get_covidtracking_df():
     return output.get_df('covidtracking')
 
 
-def get_nyt_json(state_html):
-    soup = BeautifulSoup(state_html, 'html.parser')
-    for soup_obj in soup.find_all('script',type="svelte-data"):
-        if soup_obj['url'].endswith('data.json'):
-            return json.loads(json.loads(soup_obj.contents[0])['body'])['location']
-
-
 def get_nyt_df():
     output = Output()
     main_html = requests.get('https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html').text
-    index_url = re.search(r'https://static.*live_urls.json', main_html).group(0)
-    index_url = index_url.split('"')[-1]
-    for key,item in requests.get(index_url).json().items():
-        if 'type' not in item:
+    json_url = re.search(r'https://static.*timeseries/en/USA.json', main_html).group(0)
+    for item in requests.get(json_url).json()['data']:
+        if 'region_type' not in item:
             continue
-        if item['type'] != 'state':
+        if item['region_type'] != 'state':
             continue
-        state_html = requests.get(item['url']).text
-        data = get_nyt_json(state_html)
-        state = data['metadata']['display_name']
+        state = item['display_name']
         if state == 'Washington, D.C.':
             state = 'District Of Columbia'
         if state not in STATE_TABLE:
             print('nyt' + state)
             continue
-        confirmed =  data['latest']['cases']
-        deaths = data['latest']['deaths']
+        confirmed =  item['latest']['cases']
+        deaths = item['latest']['deaths']
         output.add_row(state, confirmed, deaths, 0)
     return output.get_df('nyt')
 
