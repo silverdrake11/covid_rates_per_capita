@@ -66,10 +66,6 @@ def get_last_n(postal_code, column):
         sr = sr.reindex(idx, fill_value=0)
 
     sr = sr.dropna().astype(int)
-    
-    if column == 'confirmed':
-        sr[sr<0] = -1
-        sr = sr[~((sr-sr.median()).abs() > 4*sr.mad())]
 
     # If a value is really large, report it since it could be a mistake
     if sr[-2] > 5:
