@@ -108,66 +108,79 @@ def write_final_csv(dirpath, rows):
     print("OUTPUT: " + os.path.abspath(output_filepath))
 
 
-def get_state_deaths(row):
-    return row[0], row[2], row[3]
-
-
-def is_bad_row(rows, cur_idx):
-    '''There are a few edge cases here'''
-
-    if not cur_idx: # First one should not be removed
-        return None
-
-    prev_idx = cur_idx - 1
-    next_idx = cur_idx + 1
-
-    prev_state, prev_cases, prev_deaths = get_state_deaths(rows[prev_idx])
-    cur_state, cur_cases, cur_deaths = get_state_deaths(rows[cur_idx])
-
-    if prev_state == cur_state:
-        if prev_deaths > cur_deaths:
-            if next_idx < len(rows): # Special case where prev value is bad
-                next_state, next_cases, next_deaths = get_state_deaths(rows[next_idx])
-                if next_state == cur_state:
-                    if prev_deaths > next_deaths:
-                        return prev_idx
-            return cur_idx
-        if prev_cases > cur_cases:
-            if prev_deaths >= cur_deaths or ((prev_cases - cur_cases) <= (cur_deaths - prev_deaths)):
-                if next_idx < len(rows): # Special case where prev value is bad
-                    next_state, next_cases, next_deaths = get_state_deaths(rows[next_idx])
-                    if next_state == cur_state:
-                        if prev_cases > next_cases:
-                            return prev_idx
-                return cur_idx
-
-
 def test_func(row): # Sort by deaths, confirmed instead of by date (as some data is out of order)
     row = list(row)
     row[1] = row[1].split()[0]
     return row[0],row[1],row[3],row[2]
 
 
-def remove_rows(rows):
-    '''
-    Remove rows where number of deaths in next row is greater than previous row..
-    How did these rows get there? Either the source made a mistake or I made a 
-    mistake.
-    '''
-    rows = sorted(rows, key=test_func)
+def reversed_bisect_right(a, x):
+    lo = 0
+    hi = len(a)
+    while lo < hi:
+        mid = (lo+hi)//2
+        if x > a[mid]: 
+            hi = mid
+        else: 
+            lo = mid+1
+    return lo
+
+
+def lis(rows, row_idx):
+    '''Longest Increasing Subsquence (Reversed)'''
+    rows = list(reversed(rows))
+    nums = [row[row_idx] for row in rows]
+    tails = []
+    indices = []
+    table = {}
+    for i, num in enumerate(nums):
+        pile = reversed_bisect_right(tails, num)
+        if pile == len(tails):
+            tails.append(num)
+            indices.append(i)
+        else:
+            tails[pile] = num
+            indices[pile] = i
+        if pile:
+            table[i] = indices[pile-1]
+        else:
+            table[i] = None
+    values = []
+    cur = indices[-1]
+    while cur is not None:
+        values.append(rows[cur])
+        cur = table[cur]
+    return values
+
+
+def process_state(rows):
+    state = rows[0][0]
     num_rows = len(rows)
+    rows = lis(rows,-1)
+    rows = lis(rows,-2)
+    removed = num_rows - len(rows)
+    return rows,removed
 
-    to_remove = set()
-    for idx in range(num_rows):
-        bad_row_idx = is_bad_row(rows, idx)
-        if bad_row_idx:
-            to_remove.add(bad_row_idx)
-                    
-    to_keep = [rows[idx] for idx in range(num_rows) if idx not in to_remove]
 
-    print("Removed {} rows!".format(len(to_remove)))
-
-    return to_keep
+def remove_rows(rows):
+    rows = sorted(rows,key=test_func)
+    num_rows = len(rows)
+    state_rows = []
+    state = rows[0][0]
+    tally = 0
+    rows_to_keep = []
+    for row in rows:
+        cur_state = row[0]
+        if cur_state == state:
+            state_rows.append(row)
+        else:
+            filtered_state, num_removed = process_state(state_rows)
+            rows_to_keep.extend(filtered_state)
+            tally += num_removed
+            state_rows = []
+        state = cur_state
+    print("Removed {} rows!".format(tally))
+    return rows_to_keep
 
 
 def download_and_write_historical():
@@ -176,7 +189,6 @@ def download_and_write_historical():
     download_files(DIRNAME)
     rows = read_files(DIRNAME)
     rows = remove_rows(rows)
-    rows = remove_rows(rows) # Run twice to catch any consecutive ones
     write_final_csv(DIRNAME, rows)
     csv_filepath = os.path.join(DIRNAME, CSV_FILENAME)
     if not os.path.isdir(STATIC_DIR):
