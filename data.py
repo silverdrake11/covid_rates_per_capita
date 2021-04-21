@@ -277,9 +277,8 @@ def get_covidtracking_df():
 
 def get_nyt_df():
     output = Output()
-    main_html = requests.get('https://www.nytimes.com/interactive/2020/us/coronavirus-us-cases.html').text
-    json_url = re.search(r'https://static.*timeseries/en/USA.json', main_html).group(0)
-    for item in requests.get(json_url).json()['data']:
+    json_url = 'https://static01.nyt.com/newsgraphics/2021/coronavirus-tracking/data/pages/usa/data.json'
+    for item in requests.get(json_url).json():
         if 'region_type' not in item:
             continue
         if item['region_type'] != 'state':
