@@ -278,19 +278,15 @@ def get_covidtracking_df():
 def get_nyt_df():
     output = Output()
     json_url = 'https://static01.nyt.com/newsgraphics/2021/coronavirus-tracking/data/pages/usa/data.json'
-    for item in requests.get(json_url).json():
-        if 'region_type' not in item:
-            continue
-        if item['region_type'] != 'state':
-            continue
+    for item in requests.get(json_url).json()['states']:
         state = item['display_name']
         if state == 'Washington, D.C.':
             state = 'District Of Columbia'
         if state not in STATE_TABLE:
             print('nyt' + state)
             continue
-        confirmed =  item['latest']['cases']
-        deaths = item['latest']['deaths']
+        confirmed =  item['latest']['total']['cases']
+        deaths = item['latest']['total']['deaths']
         output.add_row(state, confirmed, deaths, 0)
     return output.get_df('nyt')
 
