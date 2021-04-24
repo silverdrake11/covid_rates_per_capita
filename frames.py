@@ -102,7 +102,9 @@ def get_most_recent_df():
     df.to_csv(os.path.join(LOG_DIR, 'debug0.csv'), index=False)
     df = df[df.source != 'previous']
     df = df[~((df.source == 'worldometer') & (df.codes == 'NY'))]
-    df = df[~((df.source == 'old') & (df.codes == 'NY'))]
+    df = df[~((df.source == 'worldometer') & (df.codes == 'KS'))]
+    df = df[~((df.source == 'worldometer') & (df.codes == 'MO'))]
+    df = df[~((df.source == 'worldometer') & (df.codes == 'WY'))]
 
     # Filter out outliers
     gr = df.drop(columns=['recovered','source']).groupby('codes')
