@@ -69,14 +69,14 @@ def get_most_recent_df():
         df = df.append(data.get_worldometer_df())
     except Exception:
         errors.append(traceback.format_exc())
-    #try: 
-    #    df = df.append(data.get_wikipedia_df())
-    #except Exception:
-    #    errors.append(traceback.format_exc())
-    #try: 
-    #    df = df.append(data.get_covidtracking_df())
-    #except Exception:
-    #    errors.append(traceback.format_exc())
+    try: 
+        df = df.append(data.get_wikipedia_df())
+    except Exception:
+        errors.append(traceback.format_exc())
+    try: 
+        df = df.append(data.get_john_hopkins_df())
+    except Exception:
+        errors.append(traceback.format_exc())
     try:
         df = df.append(data.get_nyt_df())
     except Exception:
@@ -89,38 +89,11 @@ def get_most_recent_df():
     if not os.path.isdir(LOG_DIR):
         os.mkdir(LOG_DIR)
 
-    df_prev = pd.read_csv('data.csv')
-    df_prev['source'] = 'previous'
-    df = df.append(df_prev)
-    filename = sorted(os.listdir('historical'))[-30]
-    print(filename)
-    df_old = pd.read_csv('historical/'+filename)
-    df_old['source'] = 'old'
-    df = df.append(df_old)
-
-    df = df.sort_values(['codes','deaths', 'confirmed'], ascending=False)
-    df.to_csv(os.path.join(LOG_DIR, 'debug0.csv'), index=False)
-    df = df[df.source != 'previous']
-    df = df[~((df.source == 'worldometer') & (df.codes == 'NY'))]
-    df = df[~((df.source == 'worldometer') & (df.codes == 'KS'))]
-    df = df[~((df.source == 'worldometer') & (df.codes == 'MO'))]
-    df = df[~((df.source == 'worldometer') & (df.codes == 'WY'))]
-
-    # Filter out outliers
-    gr = df.drop(columns=['recovered','source']).groupby('codes')
-    df_mad = gr.mad().rename(columns={'confirmed':'conf_mad', 'deaths':'deaths_mad'})
-    df_med = gr.median().rename(columns={'confirmed':'conf_med', 'deaths':'deaths_med'})
-    df = df.merge(df_mad, on='codes')
-    df = df.merge(df_med, on='codes')
-    df = df[np.abs(df.confirmed-df.conf_med) <= (2*np.ceil(df.conf_mad))]
-    df = df[np.abs(df.deaths-df.deaths_med) <= (2*np.ceil(df.deaths_mad))]
-    df = df[df.source != 'old']
-
     # Keep rows that are most recent (sort by deaths, if tie then confirmed)
     df = df.sort_values(['codes','deaths', 'confirmed'], ascending=False)
     df.to_csv(os.path.join(LOG_DIR, 'debug1.csv'), index=False)
     grouped = df.groupby('codes')
-    df = grouped.nth(0)
+    df = grouped.nth(1) # Pick second value in case first is way off
     df = df.reset_index()
     print(df.source.value_counts())
 

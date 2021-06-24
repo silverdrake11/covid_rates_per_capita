@@ -22,7 +22,7 @@ def request_john_hopkins():
     timestamp_format = '%m-%d-%Y'
     today_timestamp = today.strftime(timestamp_format)
     yesterday_timestamp = (today - timedelta(days=1)).strftime(timestamp_format)
-    url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{}.csv"
+    url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/{}.csv"
     response = requests.get(url.format(today_timestamp))
     if response.status_code == 200:
         return response.text
@@ -110,9 +110,9 @@ def get_john_hopkins_df():
         if row[1] == 'US':
 
             state = row[0].title()
-            confirmed = int(row[3])
-            deaths = int(row[4])
-            recovered = int(row[5])
+            confirmed = int(row[5])
+            deaths = int(row[6])
+            recovered = 0
 
             if state not in STATE_TABLE:
                 print(state)
