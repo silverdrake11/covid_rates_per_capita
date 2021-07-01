@@ -22,12 +22,13 @@ def request_john_hopkins():
     timestamp_format = '%m-%d-%Y'
     today_timestamp = today.strftime(timestamp_format)
     yesterday_timestamp = (today - timedelta(days=1)).strftime(timestamp_format)
+    day_before_timestamp = (today - timedelta(days=2)).strftime(timestamp_format)
     url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/{}.csv"
-    response = requests.get(url.format(today_timestamp))
-    if response.status_code == 200:
-        return response.text
-    else:
-        return requests.get(url.format(yesterday_timestamp)).text
+    for timestamp in [today_timestamp, yesterday_timestamp, day_before_timestamp]: # Try each one
+        response = requests.get(url.format(timestamp))
+        if response.status_code == 200:
+            return response.text
+    raise Exception('Last 3 days timestamps are bad!')
 
 
 class Output:

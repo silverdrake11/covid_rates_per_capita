@@ -8,7 +8,7 @@ from helpers import get_confirmed, format_time, get_cur_time
 
 
 ALERTS = []
-URL = 'https://api.github.com/repos/silverdrake11/covid_rates_per_capita/issues/5/comments'
+URL = 'https://api.github.com/repos/silverdrake11/covid_rates_per_capita/issues/6/comments'
 CREDENTIALS_FILENAME = 'credentials.txt'
 
 
